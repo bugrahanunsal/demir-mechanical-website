@@ -1,0 +1,1578 @@
+{
+ "version": 1,
+ "site": {
+  "url": "https://demirmechanical.com",
+  "lang": "en-CA",
+  "og_locale": "en_CA",
+  "geo_region": "CA-ON",
+  "geo_placename": "Toronto",
+  "legal_name": "Demir Mechanical & Construction Ltd.",
+  "schema_type": "Plumber",
+  "price_range": "$$",
+  "slogan": "Quality. Integrity. Performance.",
+  "schema_image": "assets/favicon-512.png",
+  "og_image": "assets/favicon-512.png",
+  "theme_color": "#ffffff",
+  "form_to": "info@demirmechanical.com",
+  "brand": "Demir Mechanical & Construction",
+  "short_name": "Demir Mechanical",
+  "catalog_name": "Plumbing & Mechanical Services"
+ },
+ "contact": {
+  "phone": "+1 (647) 919-3677",
+  "email": "info@demirmechanical.com",
+  "street": "67 Conley Street",
+  "city": "Thornhill",
+  "region": "ON",
+  "region_long": "Ontario",
+  "postal": "L4J 2X4",
+  "country": "CA",
+  "address_short": "67 Conley St, Thornhill, ON",
+  "lat": 43.803,
+  "lng": -79.423,
+  "hours_short": "Mon–Fri 8AM–6PM · Emergencies 24/7",
+  "hours_line1": "Mon–Fri 8:00 AM – 6:00 PM",
+  "hours_line2": "Emergency service 24/7",
+  "open_days": [
+   "Monday",
+   "Tuesday",
+   "Wednesday",
+   "Thursday",
+   "Friday"
+  ],
+  "opens": "08:00",
+  "closes": "18:00"
+ },
+ "links": {
+  "whatsapp": "16479193677",
+  "facebook": "",
+  "instagram": "",
+  "google": "",
+  "ga4": "",
+  "google_site_verification": ""
+ },
+ "whatsapp": {
+  "general": "Hi Demir Mechanical, I'd like to ask about a plumbing job.",
+  "service": "Hi Demir Mechanical, I have a question about {service}.",
+  "city": "Hi Demir Mechanical, I need a plumber in {city}.",
+  "button": "WhatsApp",
+  "menu_label": "WhatsApp",
+  "menu_text": "Message us",
+  "footer_text": "WhatsApp us",
+  "contact_label": "WhatsApp",
+  "contact_text": "Message us on WhatsApp"
+ },
+ "branding": {
+  "header_logo_png": "assets/demir-mechanical-construction-logo.png",
+  "header_logo_webp": "assets/demir-mechanical-construction-logo.webp",
+  "header_logo_ratio": 2.105,
+  "header_logo_alt": "Demir Mechanical & Construction logo – Toronto plumber & mechanical contractor",
+  "footer_logo": "assets/demir-logo-light.png",
+  "footer_logo_alt": "Demir Mechanical & Construction – Quality. Integrity. Performance.",
+  "footer_logo_w": 208,
+  "footer_logo_h": 116,
+  "favicon_32": "assets/favicon-32.png",
+  "favicon_48": "assets/favicon-48.png",
+  "apple_touch_icon": "assets/apple-touch-icon.png",
+  "watermark": "assets/dm-mark.png"
+ },
+ "header": {
+  "util_left": "Licensed & Insured · Serving Toronto & the GTA",
+  "emergency_label": "24/7 Emergency",
+  "cta_label": "Book Service",
+  "cta_link": "contact.html",
+  "services_all": "View all services",
+  "areas_all": "All service areas",
+  "menu": [
+   {
+    "type": "home",
+    "label": "Home",
+    "show": true
+   },
+   {
+    "type": "services",
+    "label": "Services",
+    "show": true
+   },
+   {
+    "type": "areas",
+    "label": "Service Areas",
+    "show": true
+   },
+   {
+    "type": "projects",
+    "label": "Projects",
+    "show": true
+   },
+   {
+    "type": "faq",
+    "label": "FAQ",
+    "show": true
+   },
+   {
+    "type": "about",
+    "label": "About",
+    "show": true
+   },
+   {
+    "type": "contact",
+    "label": "Contact",
+    "show": true
+   }
+  ],
+  "drawer_email_label": "Email",
+  "drawer_address_label": "Address"
+ },
+ "footer": {
+  "about": "Licensed and insured plumbing & mechanical contractor serving homeowners, businesses, and property managers across Toronto and the Greater Toronto Area.",
+  "emergency_label": "24/7 Emergency line",
+  "services_title": "Services",
+  "areas_title": "Service Areas",
+  "areas_all": "All areas →",
+  "contact_title": "Contact",
+  "areas_count": 12,
+  "copyright": "Demir Mechanical & Construction Ltd. All rights reserved.",
+  "bottom_right": "Licensed & Insured · Thornhill, Ontario",
+  "nav": [
+   {
+    "label": "Home",
+    "link": "index.html"
+   },
+   {
+    "label": "Services",
+    "link": "services.html"
+   },
+   {
+    "label": "Service Areas",
+    "link": "service-areas.html"
+   },
+   {
+    "label": "FAQ",
+    "link": "faq.html"
+   },
+   {
+    "label": "About",
+    "link": "about.html"
+   },
+   {
+    "label": "Contact",
+    "link": "contact.html"
+   }
+  ],
+  "mbar_call": "Call Now",
+  "mbar_quote": "Free Quote"
+ },
+ "blocks": {
+  "emergency": {
+   "title": "Plumbing emergency? We're on call 24/7.",
+   "text": "Burst pipe, flooding, sewer backup or no hot water — call now and speak with a technician.",
+   "button": "Call {phone}"
+  },
+  "cta": {
+   "eyebrow": "Get started",
+   "title": "Need a licensed plumber or mechanical contractor in the GTA?",
+   "text": "Free estimates on installations and renovations. Emergency service around the clock.",
+   "phone_label": "Call us 24/7",
+   "button": "Request a Free Quote"
+  },
+  "process": [
+   {
+    "icon": "phone",
+    "title": "Call or book online",
+    "text": "Tell us what's going on — by phone or the request form. Emergencies are answered 24/7."
+   },
+   {
+    "icon": "clip",
+    "title": "Diagnose & quote",
+    "text": "A licensed technician inspects the problem and gives you an upfront price before work begins."
+   },
+   {
+    "icon": "wrench",
+    "title": "Fix it right",
+    "text": "We complete the work to Ontario code with quality parts, the first time."
+   },
+   {
+    "icon": "spark",
+    "title": "Clean up & follow up",
+    "text": "We leave your space clean and stand behind the work after we're gone."
+   }
+  ],
+  "process_eyebrow": "How It Works",
+  "process_title": "Straightforward Service, Start to Finish",
+  "trust": [
+   {
+    "icon": "shield",
+    "title": "Licensed & Insured",
+    "text": "Bonded, to Ontario code"
+   },
+   {
+    "icon": "clock",
+    "title": "24/7 Emergency",
+    "text": "Nights, weekends & holidays"
+   },
+   {
+    "icon": "dollar",
+    "title": "Upfront Pricing",
+    "text": "Quoted before we start"
+   },
+   {
+    "icon": "clip",
+    "title": "Free Estimates",
+    "text": "On installs & renovations"
+   }
+  ],
+  "problems_title": "Common problems we fix",
+  "problems": [
+   {
+    "icon": "drop",
+    "text": "Burst & leaking pipes"
+   },
+   {
+    "icon": "drain",
+    "text": "Clogged drains"
+   },
+   {
+    "icon": "thermo",
+    "text": "No hot water"
+   },
+   {
+    "icon": "toilet",
+    "text": "Running toilets"
+   },
+   {
+    "icon": "alert",
+    "text": "Sewer backups"
+   },
+   {
+    "icon": "gauge",
+    "text": "Low water pressure"
+   },
+   {
+    "icon": "wave",
+    "text": "Basement flooding"
+   },
+   {
+    "icon": "snow",
+    "text": "Frozen pipes"
+   }
+  ],
+  "work_eyebrow": "What We Do",
+  "work_title": "Plumbing & Mechanical Services in Action",
+  "quote_button": "Get a Free Quote",
+  "side_button": "Request Service",
+  "form_error": "Sorry, your request could not be sent. Please call us at {phone}.",
+  "form_service_other": "Emergency — other"
+ },
+ "founder": {
+  "name": "Barış Demir",
+  "role": "Co-Founder · Thornhill, Ontario",
+  "eyebrow": "Meet the Founder",
+  "quote": "Every job should be done the way I'd want it done in my own home — properly, cleanly, and at a fair price.",
+  "bio": "Barış founded Demir Mechanical & Construction after years of hands-on work across residential, commercial, and industrial projects in the Greater Toronto Area. He built the company around a simple standard: honest quotes, quality workmanship, and a team that answers the phone when you need it.",
+  "points": [
+   "Personally oversees projects from quote to clean-up",
+   "Licensed, bonded & fully insured team",
+   "Straight answers and upfront pricing — no surprises"
+  ],
+  "badge_title": "Co-Founder",
+  "badge_text": "Demir Mechanical & Construction",
+  "initials": "BD",
+  "photo": {
+   "file": "",
+   "alt": "Barış Demir, Co-Founder of Demir Mechanical & Construction",
+   "pos": "50% 50%",
+   "key": "baris-demir-co-founder-demir-mechanical"
+  },
+  "button_home": "Our Story",
+  "button_about": "Get a Free Quote"
+ },
+ "pages": {
+  "home": {
+   "seo_title": "Toronto Plumber & Mechanical Contractor | Demir Mechanical",
+   "seo_description": "Licensed Toronto plumber & mechanical contractor. 24/7 emergency plumbing, drains, water heaters, sewer repair and riser renovations across the GTA.",
+   "hero_image": {
+    "file": "assets/photos/toronto-plumber-hero-background.webp",
+    "alt": "Plumber adjusting copper water lines with a wrench under a wall-mounted boiler",
+    "pos": "50% 50%",
+    "key": "toronto-plumber-hero-background"
+   },
+   "badge": "Technicians available 24/7",
+   "badge_more": " across the GTA",
+   "title_before": "Toronto's Trusted ",
+   "title_highlight": "Plumbing & Mechanical",
+   "title_after": " Contractor",
+   "lead": "From emergency repairs to full mechanical room renovations, Demir Mechanical & Construction delivers licensed, dependable service for homes, businesses, and multi-unit buildings across Toronto and the Greater Toronto Area.",
+   "lead_mobile": "Licensed, insured plumbers for homes, businesses and condo buildings across Toronto and the GTA.",
+   "tiles_title": "What do you need help with?",
+   "tiles": [
+    {
+     "icon": "alert",
+     "label": "Emergency repair",
+     "link": "service-and-repairs.html"
+    },
+    {
+     "icon": "drain",
+     "label": "Drain cleaning",
+     "link": "drain-cleaning.html"
+    },
+    {
+     "icon": "heater",
+     "label": "Water heaters",
+     "link": "water-heaters.html"
+    },
+    {
+     "icon": "sewer",
+     "label": "Sewer repair",
+     "link": "sewer-repair.html"
+    }
+   ],
+   "tiles_all": "See all {count} services",
+   "proof": [
+    {
+     "icon": "shield",
+     "title": "Licensed",
+     "text": "& fully insured"
+    },
+    {
+     "icon": "clock",
+     "title": "24/7",
+     "text": "Emergency service"
+    },
+    {
+     "icon": "pin",
+     "title": "GTA-wide",
+     "text": "Based in Thornhill"
+    }
+   ],
+   "quote_title": "Request Service",
+   "quote_text": "Tell us what you need — we'll call you back fast.",
+   "quote_button": "Request Service",
+   "quote_note": "For emergencies, call {phone}",
+   "quote_sent_title": "Request received",
+   "quote_sent_text": "Thanks! We'll call you back shortly at the number you provided.",
+   "services_eyebrow": "What We Do",
+   "services_title": "Plumbing & Mechanical Services in Toronto",
+   "services_text": "Residential and commercial plumbing, drains, sewers, water heaters, and complete mechanical room and riser renovations — handled by one licensed team.",
+   "about_image": {
+    "file": "assets/photos/licensed-plumber-thornhill-ontario.webp",
+    "alt": "Licensed plumber in a hard hat and safety glasses inspecting a pipe valve",
+    "pos": "72% 40%",
+    "key": "licensed-plumber-thornhill-ontario"
+   },
+   "about_image_tag": "Thornhill, ON",
+   "about_stat_title": "Licensed & Insured",
+   "about_stat_text": "Work done to Ontario code",
+   "about_eyebrow": "Who We Are",
+   "about_title": "A Local Contractor Built on Quality, Integrity & Performance",
+   "about_text": "Founded by Barış Demir, Demir Mechanical & Construction grew out of years of hands-on experience across residential, commercial, and industrial projects in the Greater Toronto Area. We saw too many property owners let down by rushed work and unclear pricing — so we built a company that does the opposite.",
+   "values": [
+    {
+     "icon": "shield",
+     "title": "Quality",
+     "text": "Every installation and repair is done to code and built to last."
+    },
+    {
+     "icon": "scale",
+     "title": "Integrity",
+     "text": "Upfront, honest pricing — what you need, not what pads the bill."
+    },
+    {
+     "icon": "bolt",
+     "title": "Performance",
+     "text": "Fast response and systems that keep running long after we leave."
+    }
+   ],
+   "about_button": "About Demir Mechanical",
+   "process_text": "No guesswork and no surprises — here's what to expect when you call Demir Mechanical.",
+   "who_eyebrow": "Who We Serve",
+   "who_title": "Homes, Businesses & Multi-Unit Buildings",
+   "who_text": "Whether it's a single fixture or an entire building, we scale to the job.",
+   "who": [
+    {
+     "icon": "home",
+     "title": "Homeowners",
+     "text": "Repairs, drain cleaning, water heaters, and renovation plumbing for houses and condos.",
+     "points": [
+      "Emergency repairs 24/7",
+      "Water heaters & toilets",
+      "Kitchen & bath rough-ins"
+     ]
+    },
+    {
+     "icon": "store",
+     "title": "Commercial",
+     "text": "Reliable plumbing and mechanical service for offices, retail, and restaurants — scheduled around your hours.",
+     "points": [
+      "Preventative maintenance",
+      "Drain & sewer service",
+      "Code-compliant upgrades"
+     ]
+    },
+    {
+     "icon": "building",
+     "title": "Property Managers",
+     "text": "Riser renovations and mechanical room upgrades for multi-unit buildings, planned to minimize resident disruption.",
+     "points": [
+      "Riser replacement",
+      "Mechanical room renovation",
+      "Tenant coordination"
+     ]
+    }
+   ],
+   "areas_eyebrow": "Service Areas",
+   "areas_title": "Licensed Plumbing & Mechanical Service Across the GTA",
+   "areas_text": "Based in Thornhill, Ontario, our technicians serve homeowners, businesses, and property managers throughout Toronto and the Greater Toronto Area. Don't see your city? We cover most of the GTA — call to confirm.",
+   "areas_button": "All Service Areas",
+   "work_text": "From leak repairs to heating systems — the kind of work our licensed team handles every day across the GTA.",
+   "work": [
+    {
+     "image": {
+      "file": "assets/photos/hydronic-heating-piping-gta.webp",
+      "alt": "Technician adjusting hydronic heating pipes and a pressure gauge in a mechanical room",
+      "pos": "45% 45%",
+      "key": "hydronic-heating-piping-gta"
+     },
+     "tag": "Heating systems",
+     "label": "Featured photo"
+    },
+    {
+     "image": {
+      "file": "assets/photos/leaking-pipe-repair-toronto.webp",
+      "alt": "Gloved hand tightening a leaking PVC sink trap with adjustable pliers",
+      "pos": "55% 50%",
+      "key": "leaking-pipe-repair-toronto"
+     },
+     "tag": "Leak repair",
+     "label": "Photo"
+    },
+    {
+     "image": {
+      "file": "assets/photos/main-water-valve-repair-gta.webp",
+      "alt": "Plumber in a hard hat repairing the main water shut-off valve and meter connection",
+      "pos": "50% 40%",
+      "key": "main-water-valve-repair-gta"
+     },
+     "tag": "Water service",
+     "label": "Photo"
+    }
+   ],
+   "reviews_eyebrow": "Reviews",
+   "reviews_title": "What Our Customers Say",
+   "reviews_text": "Reviews from homeowners and property managers across Toronto and the GTA.",
+   "faq_eyebrow": "FAQ",
+   "faq_title": "Frequently Asked Questions",
+   "faq_text": "Quick answers about our plumbing and mechanical services in Toronto and the GTA.",
+   "faq_button": "See all FAQs",
+   "suppliers_eyebrow": "Suppliers",
+   "suppliers_title": "Trusted Suppliers We Work With"
+  },
+  "about": {
+   "seo_title": "About Us | Demir Mechanical & Construction — Toronto",
+   "seo_description": "About Demir Mechanical & Construction — a locally owned, licensed plumbing and mechanical contractor serving Toronto and the GTA. Founded by Barış Demir.",
+   "title": "About Demir Mechanical & Construction",
+   "lead": "A locally owned Toronto contractor delivering licensed plumbing and mechanical service across the GTA — built on quality, integrity, and performance.",
+   "story_eyebrow": "Our Story",
+   "story_title": "Toronto's Trusted Plumbing & Mechanical Experts",
+   "story": [
+    "Founded by Barış Demir, Demir Mechanical & Construction grew out of years of hands-on experience across residential, commercial, and industrial projects throughout the Greater Toronto Area. We saw too many property owners let down by rushed work and unclear pricing — so we built a company that does the opposite: honest quotes, clean workmanship, and service that stands behind every job.",
+    "Today we're proud to be a locally owned and operated contractor that homeowners, businesses, and property managers across Toronto rely on — 24/7. From a single emergency repair to a full mechanical room renovation, we bring the same standards to every job."
+   ],
+   "button_1": "Get a Free Quote",
+   "button_2": "Our Services",
+   "image": {
+    "file": "assets/photos/plumbing-heating-technician-toronto.webp",
+    "alt": "Plumbing and heating technician tightening a brass manifold fitting",
+    "pos": "70% 40%",
+    "key": "plumbing-heating-technician-toronto"
+   },
+   "image_tag": "Licensed & insured",
+   "stat_title": "Thornhill, Ontario",
+   "stat_text": "Serving the whole GTA",
+   "promise_eyebrow": "Our Promise",
+   "promise_title": "Quality. Integrity. Performance.",
+   "promise_text": "Three words on our logo — and the standard we hold every job to.",
+   "promise": [
+    {
+     "icon": "shield",
+     "title": "Quality",
+     "text": "We don't cut corners. Every installation and repair is done to Ontario code with quality parts, and built to last."
+    },
+    {
+     "icon": "scale",
+     "title": "Integrity",
+     "text": "Upfront, honest pricing with no surprises. We tell you what you actually need — not what pads the bill."
+    },
+    {
+     "icon": "bolt",
+     "title": "Performance",
+     "text": "Fast response, reliable results, and systems that keep running long after we've packed up."
+    }
+   ],
+   "process_eyebrow": "How We Work",
+   "process_title": "What to Expect When You Call"
+  },
+  "services": {
+   "seo_title": "Plumbing & Mechanical Services Toronto | Demir",
+   "seo_description": "Plumbing & mechanical services in Toronto: repairs, drain cleaning, water heaters, sewer repair, toilets, riser and mechanical room renovation.",
+   "title": "Plumbing & Mechanical Services in Toronto",
+   "lead": "From emergency repairs to full mechanical room renovations — dependable, licensed service for homes, businesses, and multi-unit buildings across Toronto and the GTA.",
+   "work": [
+    {
+     "image": {
+      "file": "assets/photos/radiant-heating-manifold-gta.webp",
+      "alt": "Plumber connecting a radiant floor heating manifold with a pressure gauge",
+      "pos": "55% 40%",
+      "key": "radiant-heating-manifold-gta"
+     },
+     "tag": "Radiant heating",
+     "label": "Featured photo"
+    },
+    {
+     "image": {
+      "file": "assets/photos/kitchen-sink-plumbing-toronto.webp",
+      "alt": "Plumber installing kitchen sink plumbing with tools and fittings laid out on the floor",
+      "pos": "40% 55%",
+      "key": "kitchen-sink-plumbing-toronto"
+     },
+     "tag": "Kitchen plumbing",
+     "label": "Photo"
+    },
+    {
+     "image": {
+      "file": "assets/photos/bathroom-sink-drain-repair-toronto.webp",
+      "alt": "Plumber tightening a chrome bathroom sink trap with a red pipe wrench",
+      "pos": "50% 50%",
+      "key": "bathroom-sink-drain-repair-toronto"
+     },
+     "tag": "Bathroom plumbing",
+     "label": "Photo"
+    }
+   ]
+  },
+  "service_template": {
+   "seo_title": "{service} Toronto & GTA | Demir Mechanical",
+   "seo_description": "{service} in Toronto & the GTA by Demir Mechanical. Licensed & insured, free estimates. Call {phone}.",
+   "title": "{service} in Toronto & the GTA",
+   "lead_end_emergency": "Licensed, insured, and available 24/7.",
+   "lead_end_scheduled": "Licensed, insured, and available on your schedule.",
+   "photo_label": "Add a {service_lower} photo",
+   "included_title": "What's Included",
+   "signs_title": "Signs You Need {service}",
+   "area_title": "Serving Toronto & the GTA",
+   "area_text": "Our licensed technicians serve Toronto, North York, Scarborough, Etobicoke, Vaughan, Markham, Richmond Hill and the wider GTA. We arrive prepared, work clean, and stand behind every job.",
+   "faq_title": "Common Questions",
+   "faq": [
+    {
+     "q": "How much does {service_lower} cost in Toronto?",
+     "a": "Every job is different, so we provide an upfront quote after assessing the work. For installations and renovations, estimates are free. Call {phone} to book an assessment."
+    },
+    {
+     "q": "Do you offer emergency {service_lower}?",
+     "a": "Yes — urgent plumbing issues are handled 24/7 across Toronto and the GTA.",
+     "a_scheduled": "This service is usually scheduled, but for anything urgent our team is on call 24/7."
+    },
+    {
+     "q": "Which areas do you serve?",
+     "a": "Toronto, North York, Scarborough, Etobicoke, Vaughan, Markham, Richmond Hill, Mississauga, Brampton and most of the GTA."
+    }
+   ],
+   "side_title": "Need {service_lower}?",
+   "side_text_emergency": "Speak with a licensed technician — available 24/7.",
+   "side_text_scheduled": "Speak with a licensed technician — free estimates available.",
+   "all_title": "All Services",
+   "schema_areas": 10,
+   "breadcrumb": "Services"
+  },
+  "contact": {
+   "seo_title": "Contact | Demir Mechanical — Toronto Plumber",
+   "seo_description": "Call +1 (647) 919-3677 or request a free quote. Licensed 24/7 plumbing & mechanical service across Toronto and the GTA.",
+   "title": "Contact Demir Mechanical",
+   "lead": "Have a question, need a quote, or dealing with an emergency? We're here to help — 24/7 across Toronto and the GTA.",
+   "eyebrow": "Get in Touch",
+   "info_title": "Talk to a Licensed Technician",
+   "phone_label": "Phone · 24/7 emergency",
+   "email_label": "Email",
+   "address_label": "Address",
+   "hours_label": "Hours",
+   "form_title": "Request a Free Quote",
+   "form_text": "Fill out the form and we'll get back to you as soon as possible.",
+   "form_button": "Send Request",
+   "sent_title": "Request received",
+   "sent_text": "Thanks! We'll get back to you as soon as possible.",
+   "map_title": "Serving Toronto & the GTA",
+   "map_text": "Based in Thornhill, Ontario · 67 Conley Street",
+   "faq_eyebrow": "FAQ",
+   "faq_title": "Frequently Asked Questions"
+  },
+  "faq": {
+   "seo_title": "Plumbing FAQ | Demir Mechanical — Toronto & GTA",
+   "seo_description": "Answers to common plumbing questions in Toronto: emergencies, pricing, estimates, water heaters, drains, backwater valves and riser renovations.",
+   "title": "Plumbing FAQ — Toronto & the GTA",
+   "lead": "Straight answers to the questions we hear most — emergencies, pricing, services and building projects. Can't find yours? Call us any time.",
+   "side_title": "Still have a question?",
+   "side_text": "Speak directly with a licensed technician — we're happy to help.",
+   "popular_title": "Popular Services",
+   "popular_count": 6
+  },
+  "areas": {
+   "seo_title": "Service Areas | Plumber Toronto & GTA | Demir Mechanical",
+   "seo_description": "Demir Mechanical serves Toronto, North York, Scarborough, Vaughan, Markham, Richmond Hill, Mississauga, Brampton, Oakville and more of the GTA.",
+   "title": "Service Areas — Toronto & the GTA",
+   "lead": "Based in Thornhill, Ontario, Demir Mechanical & Construction serves homes, businesses and buildings across Toronto, York, Peel, Halton and Durham regions.",
+   "eyebrow": "Where We Work",
+   "list_title": "Find Your City",
+   "list_text": "Choose your area to see local services, neighbourhoods and answers. Don't see your city? Call — we cover most of the GTA.",
+   "regions": [
+    "City of Toronto",
+    "York Region",
+    "Peel Region",
+    "Halton Region",
+    "Durham Region"
+   ],
+   "map_title": "{street}, {city}, {region}",
+   "map_text": "Our home base — minutes from Highway 7 & 407"
+  },
+  "city_template": {
+   "seo_title": "Plumber in {city}, ON | 24/7 Service | Demir Mechanical",
+   "seo_title_short": "Plumber in {city}, ON | Demir Mechanical",
+   "seo_description": "Licensed plumber in {city}, Ontario. 24/7 emergency plumbing, drain cleaning, water heaters & sewer repair. Free estimates — call {phone}.",
+   "title": "Plumber in {city}, Ontario",
+   "lead": "Licensed, insured plumbing and mechanical service in {city} — emergency repairs 24/7, drain cleaning, water heaters, sewer repair and more.",
+   "photo_label": "Add a {city} photo",
+   "intro": "Looking for a reliable plumber in {city}? Demir Mechanical & Construction provides licensed plumbing and mechanical service to homeowners, businesses and property managers {where}.",
+   "where_toronto": "across Toronto",
+   "where_city_of_toronto": "throughout {city} and the rest of Toronto",
+   "where_other": "throughout {city} and {region}",
+   "services_title": "Plumbing Services in {city}",
+   "hoods_title": "Neighbourhoods We Serve in {city}",
+   "why_title": "Why {city} Chooses Demir Mechanical",
+   "why": [
+    "24/7 emergency response across {city}",
+    "Upfront pricing before any work begins",
+    "Licensed, bonded and fully insured",
+    "Clean, code-compliant workmanship"
+   ],
+   "faq_title": "Common Questions",
+   "faq": [
+    {
+     "q": "Do you offer emergency plumbing in {city}?",
+     "a": "Yes. Our technicians are on call 24/7 for burst pipes, flooding, sewer backups and no-hot-water emergencies in {city}. Call {phone} any time."
+    },
+    {
+     "q": "How much does a plumber cost in {city}?",
+     "a": "Every job is different, so we assess the problem and give you an upfront price before any work begins. Estimates for installations and renovations are free."
+    },
+    {
+     "q": "Which neighbourhoods in {city} do you serve?",
+     "a": "We serve all of {city}, including {neighbourhoods}."
+    }
+   ],
+   "side_title": "Need a plumber in {city}?",
+   "side_text": "Speak with a licensed technician — emergencies answered 24/7.",
+   "nearby_title": "Nearby Service Areas",
+   "nearby_link": "Plumber in {city}",
+   "nearby_count": 5,
+   "more_title": "More Areas",
+   "more_all": "All service areas",
+   "more_contact": "Not listed? Contact us"
+  },
+  "notfound": {
+   "seo_title": "Page Not Found | Demir Mechanical & Construction",
+   "seo_description": "This page could not be found. Browse plumbing and mechanical services, service areas across Toronto and the GTA, or contact our licensed team 24/7.",
+   "title": "Sorry — that page doesn't exist",
+   "lead": "The link may be old or mistyped. Here are the quickest ways to get help from our licensed plumbers.",
+   "eyebrow": "Popular pages",
+   "list_title": "Where would you like to go?",
+   "button_services": "All services",
+   "button_areas": "Service areas",
+   "button_contact": "Contact us"
+  },
+  "projects": {
+   "seo_title": "Our Projects | Demir Mechanical — Toronto & GTA",
+   "seo_description": "Recent plumbing and mechanical projects by Demir Mechanical across Toronto and the GTA — riser renovations, mechanical rooms, water heaters, drains and more.",
+   "title": "Our Projects",
+   "lead": "Recent plumbing and mechanical work by our licensed team across Toronto and the Greater Toronto Area.",
+   "eyebrow": "Our Work",
+   "list_title": "Recent Projects",
+   "list_text": "Click a project to see the photos and what we did.",
+   "card_button": "View project",
+   "filter_all": "All",
+   "home_eyebrow": "Our Work",
+   "home_title": "Recent Projects",
+   "home_text": "A look at recent jobs our licensed team completed across the GTA.",
+   "home_button": "See all projects",
+   "home_count": 3
+  },
+  "project_template": {
+   "seo_title": "{project} | Demir Mechanical",
+   "seo_description": "{summary}",
+   "breadcrumb": "Projects",
+   "gallery_title": "Project Photos",
+   "about_title": "About This Project",
+   "highlights_title": "What We Did",
+   "facts_title": "Project Details",
+   "location_label": "Location",
+   "service_label": "Service",
+   "date_label": "Completed",
+   "service_link": "More about {service}",
+   "side_title": "Planning a similar project?",
+   "side_text": "Talk to a licensed technician — free estimates on installations and renovations.",
+   "more_title": "More Projects",
+   "all_link": "All projects",
+   "photos": "{count} photos",
+   "photo": "1 photo",
+   "viewer_close": "Close",
+   "viewer_prev": "Previous photo",
+   "viewer_next": "Next photo"
+  }
+ },
+ "services": [
+  {
+   "slug": "service-and-repairs",
+   "name": "Service & Repairs",
+   "icon": "repair",
+   "emergency": true,
+   "short": "Fast, reliable repairs — from minor fixes to major faults — done right the first time.",
+   "intro": "When something goes wrong with your plumbing or mechanical system, you need it fixed fast — and fixed right. Demir Mechanical & Construction provides prompt, reliable repair services for homes and businesses across Toronto and the GTA. From leaky pipes and faulty fixtures to complex mechanical faults, our licensed technicians diagnose the problem accurately and deliver a lasting solution, not a temporary patch.",
+   "included": [
+    "Leak detection and repair",
+    "Fixture and valve repairs",
+    "Pipe repairs and replacements",
+    "Mechanical system troubleshooting",
+    "Emergency repairs, available 24/7",
+    "All makes and models serviced"
+   ],
+   "signs": [
+    "Dripping taps or running fixtures",
+    "Unexplained jumps in your water bill",
+    "Low or uneven water pressure",
+    "Damp spots on walls or ceilings"
+   ],
+   "closing": "Don't let a small problem turn into a costly one.",
+   "image": {
+    "file": "assets/photos/plumbing-repair-service-toronto.webp",
+    "alt": "Plumber tightening a sink drain pipe with a red pipe wrench during a plumbing repair in Toronto",
+    "pos": "42% 35%",
+    "key": "plumbing-repair-service-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "drain-cleaning",
+   "name": "Drain Cleaning",
+   "icon": "drain",
+   "emergency": true,
+   "short": "Clogged or slow drains cleared fast with high-efficiency cleaning and camera inspection.",
+   "intro": "A clogged drain is more than an inconvenience — left untreated, it can lead to backups, odours, and water damage. Demir Mechanical & Construction clears blockages quickly and keeps your drains flowing with professional, high-efficiency cleaning across Toronto and the GTA. We don't just clear the clog; we identify what caused it, so it doesn't come back.",
+   "included": [
+    "Kitchen, bathroom & floor drains",
+    "High-pressure water jetting",
+    "Camera inspection to locate blockages",
+    "Grease and debris removal",
+    "Root intrusion clearing",
+    "Preventative maintenance"
+   ],
+   "signs": [
+    "Water draining slowly",
+    "Gurgling sounds from drains",
+    "Bad odours from sinks or floor drains",
+    "Water backing up in multiple fixtures"
+   ],
+   "closing": "Flowing freely again, fast.",
+   "image": {
+    "file": "assets/photos/drain-cleaning-service-toronto.webp",
+    "alt": "Plumber inspecting kitchen sink drain pipes during a drain cleaning service in Toronto",
+    "pos": "38% 30%",
+    "key": "drain-cleaning-service-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "water-heaters",
+   "name": "Water Heaters",
+   "icon": "heater",
+   "emergency": true,
+   "short": "Tank and tankless installation, replacement, and emergency repair.",
+   "intro": "No hot water is never a good time. Demir Mechanical & Construction installs, replaces, and repairs water heaters of all types — keeping your Toronto home or business supplied with reliable hot water year-round. We help you choose the right unit for your needs and install it safely, efficiently, and to Ontario code.",
+   "included": [
+    "Water heater installation & replacement",
+    "Tankless water heater systems",
+    "Repair and maintenance",
+    "Energy-efficient upgrades",
+    "Thermostat & element replacement",
+    "Fast emergency service"
+   ],
+   "signs": [
+    "No hot water or it runs out quickly",
+    "Rusty or discoloured hot water",
+    "Rumbling or popping noises",
+    "Water pooling around the tank"
+   ],
+   "closing": "Hot water when you need it.",
+   "image": {
+    "file": "assets/photos/tankless-water-heater-installation-toronto.webp",
+    "alt": "Technician installing a wall-mounted tankless water heater with copper piping in a Toronto basement",
+    "pos": "50% 40%",
+    "key": "tankless-water-heater-installation-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "plumbing-services",
+   "name": "Plumbing Services",
+   "icon": "plumb",
+   "emergency": false,
+   "short": "General plumbing for homes and businesses — any task, big or small, done to code.",
+   "intro": "From a dripping faucet to a full repipe, Demir Mechanical & Construction handles every kind of plumbing work for homes and businesses across Toronto and the GTA. Our certified technicians bring the same care and precision to a simple fixture swap as they do to a major installation — always on time, always to code.",
+   "included": [
+    "Faucet, sink & fixture installation",
+    "Pipe installation and repair",
+    "Water supply & shut-off valves",
+    "Leak detection and repair",
+    "Residential & commercial plumbing",
+    "Renovation rough-ins"
+   ],
+   "signs": [
+    "Planning a kitchen or bath renovation",
+    "Old or corroded supply lines",
+    "Shut-off valves that won't close",
+    "Fixtures that need upgrading"
+   ],
+   "closing": "One reliable team for all your plumbing needs.",
+   "image": {
+    "file": "assets/photos/plumbing-services-toronto.webp",
+    "alt": "Licensed plumber connecting a black ABS P-trap under a sink, plumbing services in Toronto",
+    "pos": "60% 50%",
+    "key": "plumbing-services-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "sewer-repair",
+   "name": "Sewer Repair",
+   "icon": "sewer",
+   "emergency": true,
+   "short": "Camera inspection, repair, and replacement of sewer lines with modern equipment.",
+   "intro": "Sewer problems are serious — and the longer they wait, the worse they get. Demir Mechanical & Construction provides complete sewer line inspection, repair, and replacement using modern equipment that pinpoints the issue without unnecessary digging. We restore your line properly, so you're not dealing with the same backup next season.",
+   "included": [
+    "Camera sewer line inspection",
+    "Blockage and root removal",
+    "Sewer line repair & replacement",
+    "Backwater valve installation",
+    "Trenchless options where possible",
+    "Emergency sewer service"
+   ],
+   "signs": [
+    "Sewage odours in the basement",
+    "Multiple drains backing up at once",
+    "Soggy patches in the yard",
+    "Frequent toilet clogs"
+   ],
+   "closing": "Protect your property from costly backups.",
+   "image": {
+    "file": "assets/photos/sewer-line-repair-toronto.webp",
+    "alt": "New PVC sewer pipe installed in an excavated trench during a sewer line repair in the GTA",
+    "pos": "45% 55%",
+    "key": "sewer-line-repair-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "mechanical-room-renovation",
+   "name": "Mechanical Room Renovation",
+   "icon": "mech",
+   "emergency": false,
+   "short": "Complete upgrades — plumbing, heating, pumps, and drainage — built for performance.",
+   "intro": "The mechanical room is the heart of your building. When it's outdated or inefficient, everything downstream suffers. Demir Mechanical & Construction modernizes mechanical rooms from the ground up — plumbing, heating, pumps, and drainage — designed for efficiency, safety, and future expansion across the GTA.",
+   "included": [
+    "Mechanical room assessment & design",
+    "Boiler, pump & valve upgrades",
+    "Plumbing & drainage reconfiguration",
+    "Code compliance & safety upgrades",
+    "Professional installation & labeling",
+    "Ongoing maintenance plans"
+   ],
+   "signs": [
+    "Aging boilers or pumps",
+    "Rising energy and repair costs",
+    "Unlabeled or confusing piping",
+    "Upcoming inspections or expansion"
+   ],
+   "closing": "Bring your mechanical room up to today's standards.",
+   "image": {
+    "file": "assets/photos/mechanical-room-renovation-toronto.webp",
+    "alt": "Renovated mechanical room with copper piping, a high-efficiency boiler and an indirect hot water tank",
+    "pos": "50% 50%",
+    "key": "mechanical-room-renovation-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "riser-renovation",
+   "name": "Riser Renovation",
+   "icon": "riser",
+   "emergency": false,
+   "short": "Vertical pipe replacements for multi-unit buildings — planned for minimal disruption.",
+   "intro": "Aging risers are one of the most common — and most disruptive — problems in multi-unit buildings. Demir Mechanical & Construction specializes in riser replacement and renovation, upgrading the vertical plumbing lines that serve every floor. We plan and execute each project to minimize downtime for residents while ensuring full code compliance and long-term reliability.",
+   "included": [
+    "Full riser assessment & planning",
+    "Water and drainage riser replacement",
+    "Coordination with property managers",
+    "Tenant scheduling & communication",
+    "Code-compliant, insured workmanship",
+    "Clean-up and restoration"
+   ],
+   "signs": [
+    "Recurring leaks between floors",
+    "Discoloured water in multiple units",
+    "Low pressure on upper floors",
+    "Building approaching end of pipe life"
+   ],
+   "closing": "Protect your building's value with risers built to last.",
+   "image": {
+    "file": "assets/photos/riser-renovation-plumbing-toronto.webp",
+    "alt": "Plumber opening a bathroom floor to replace drain piping during a plumbing renovation in Toronto",
+    "pos": "48% 45%",
+    "key": "riser-renovation-plumbing-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "slug": "toilet-installation",
+   "name": "Toilet Installation",
+   "icon": "toilet",
+   "emergency": false,
+   "short": "Installation, replacement, and repair of all toilet types — clean, secure, leak-free.",
+   "intro": "Whether you're renovating a bathroom or replacing a worn-out unit, a properly installed toilet should run clean, quiet, and leak-free for years. Demir Mechanical & Construction installs, replaces, and repairs all types of toilets with expert care across Toronto and the GTA — ensuring a secure seal, correct water flow, and zero mess.",
+   "included": [
+    "New toilet supply & installation",
+    "Replacement of old or faulty units",
+    "Wax seal and flange repair",
+    "Running or leaking toilet repair",
+    "Bidet & smart toilet installation",
+    "Clean, tidy workmanship"
+   ],
+   "signs": [
+    "Toilet rocks or feels loose",
+    "Constant running or refilling",
+    "Water around the base",
+    "Frequent clogs or weak flush"
+   ],
+   "closing": "Upgrade your bathroom with confidence.",
+   "image": {
+    "file": "assets/photos/toilet-installation-toronto.webp",
+    "alt": "Plumber fitting a new toilet seat during a toilet installation in a Toronto bathroom",
+    "pos": "50% 50%",
+    "key": "toilet-installation-toronto"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  }
+ ],
+ "cities": [
+  {
+   "name": "Toronto",
+   "slug": "plumber-toronto",
+   "region": "City of Toronto",
+   "blurb": "Toronto's older homes often still have galvanized supply lines, cast-iron drains and shared sewer laterals, while downtown condo towers depend on aging risers and mechanical rooms. We handle both every week.",
+   "neighbourhoods": [
+    "Downtown",
+    "Midtown",
+    "Leslieville",
+    "The Annex",
+    "Liberty Village",
+    "Yorkville"
+   ],
+   "lat": 43.6532,
+   "lng": -79.3832,
+   "image": {
+    "file": "assets/photos/plumber-toronto-on.webp",
+    "alt": "Plumber tightening a chrome sink drain with a red pipe wrench, plumbing repair in Toronto, Ontario",
+    "pos": "55% 45%",
+    "key": "plumber-toronto-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "North York",
+   "slug": "plumber-north-york",
+   "region": "City of Toronto",
+   "blurb": "From post-war bungalows in Don Mills to new condo towers along Yonge Street, North York has a mix of older galvanized plumbing and high-rise systems — we're minutes away from Thornhill.",
+   "neighbourhoods": [
+    "Willowdale",
+    "Don Mills",
+    "Bayview Village",
+    "York Mills",
+    "Downsview",
+    "Newtonbrook"
+   ],
+   "lat": 43.7615,
+   "lng": -79.4111,
+   "image": {
+    "file": "assets/photos/plumber-north-york-on.webp",
+    "alt": "Plumber repairing a bathroom sink drain with a pipe wrench, plumbing service in North York",
+    "pos": "55% 45%",
+    "key": "plumber-north-york-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Scarborough",
+   "slug": "plumber-scarborough",
+   "region": "City of Toronto",
+   "blurb": "Many Scarborough homes date from the 1950s–70s, which means aging water heaters, clay sewer laterals prone to root intrusion and basements at risk during heavy rain.",
+   "neighbourhoods": [
+    "Agincourt",
+    "Malvern",
+    "Scarborough Village",
+    "Guildwood",
+    "Highland Creek",
+    "Birch Cliff"
+   ],
+   "lat": 43.7764,
+   "lng": -79.2318,
+   "image": {
+    "file": "assets/photos/plumber-scarborough-on.webp",
+    "alt": "Gloved hand fixing a leaking sink trap, emergency leak repair in Scarborough",
+    "pos": "55% 50%",
+    "key": "plumber-scarborough-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Etobicoke",
+   "slug": "plumber-etobicoke",
+   "region": "City of Toronto",
+   "blurb": "Etobicoke's lakeshore condos and older west-end homes bring everything from riser work to sewer backups and basement flooding after storms.",
+   "neighbourhoods": [
+    "Mimico",
+    "Islington Village",
+    "Humber Bay",
+    "Long Branch",
+    "The Kingsway",
+    "Rexdale"
+   ],
+   "lat": 43.6205,
+   "lng": -79.5132,
+   "image": {
+    "file": "assets/photos/plumber-etobicoke-on.webp",
+    "alt": "Plumber tightening a leaking chrome P-trap, plumbing repair in Etobicoke",
+    "pos": "50% 50%",
+    "key": "plumber-etobicoke-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "York",
+   "slug": "plumber-york",
+   "region": "City of Toronto",
+   "blurb": "Older housing stock in York means aging drains, low water pressure and fixtures overdue for replacement — exactly the repairs we specialize in.",
+   "neighbourhoods": [
+    "Weston",
+    "Mount Dennis",
+    "Oakwood Village",
+    "Fairbank",
+    "Caledonia"
+   ],
+   "lat": 43.6896,
+   "lng": -79.4794,
+   "image": {
+    "file": "assets/photos/plumber-york-on.webp",
+    "alt": "Plumber fitting a chrome bottle trap under a bathroom sink, plumbing service in York, Toronto",
+    "pos": "50% 50%",
+    "key": "plumber-york-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "East York",
+   "slug": "plumber-east-york",
+   "region": "City of Toronto",
+   "blurb": "East York's classic brick homes and Thorncliffe Park apartment buildings rely on plumbing that's often decades old — we keep both running.",
+   "neighbourhoods": [
+    "Leaside",
+    "Thorncliffe Park",
+    "Danforth Village",
+    "Governor's Bridge",
+    "O'Connor–Parkview"
+   ],
+   "lat": 43.6912,
+   "lng": -79.3416,
+   "image": {
+    "file": "assets/photos/plumber-east-york-on.webp",
+    "alt": "Plumber installing kitchen sink plumbing, plumbing service in East York",
+    "pos": "50% 50%",
+    "key": "plumber-east-york-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Vaughan",
+   "slug": "plumber-vaughan",
+   "region": "York Region",
+   "blurb": "Vaughan's fast-growing neighbourhoods include new builds needing fixture and water heater upgrades alongside commercial and industrial spaces in Concord.",
+   "neighbourhoods": [
+    "Woodbridge",
+    "Maple",
+    "Concord",
+    "Kleinburg",
+    "Vellore Village",
+    "Thornhill Woods"
+   ],
+   "lat": 43.8361,
+   "lng": -79.4983,
+   "image": {
+    "file": "assets/photos/plumber-vaughan-on.webp",
+    "alt": "Technician servicing hydronic heating pipes and a pressure gauge, heating plumbing in Vaughan",
+    "pos": "50% 50%",
+    "key": "plumber-vaughan-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Thornhill",
+   "slug": "plumber-thornhill",
+   "region": "York Region",
+   "blurb": "Thornhill is home base for Demir Mechanical — our shop is on Conley Street, so Thornhill homeowners and businesses get some of our fastest response times.",
+   "neighbourhoods": [
+    "Old Thornhill",
+    "Bayview Glen",
+    "Royal Orchard",
+    "Spring Farm",
+    "Brownridge",
+    "Thornhill Woods"
+   ],
+   "lat": 43.815,
+   "lng": -79.423,
+   "image": {
+    "file": "assets/photos/plumber-thornhill-on.webp",
+    "alt": "Plumbing technician tightening a brass heating manifold, plumbing and heating service in Thornhill",
+    "pos": "70% 40%",
+    "key": "plumber-thornhill-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Markham",
+   "slug": "plumber-markham",
+   "region": "York Region",
+   "blurb": "Markham's mix of established homes, new subdivisions and commercial plazas keeps us busy with water heaters, drain cleaning and commercial maintenance.",
+   "neighbourhoods": [
+    "Unionville",
+    "Cornell",
+    "Markham Village",
+    "Milliken",
+    "Berczy Village",
+    "Cathedraltown"
+   ],
+   "lat": 43.8561,
+   "lng": -79.337,
+   "image": {
+    "file": "assets/photos/plumber-markham-on.webp",
+    "alt": "Plumber connecting a radiant floor heating manifold, plumbing and heating service in Markham",
+    "pos": "55% 40%",
+    "key": "plumber-markham-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Richmond Hill",
+   "slug": "plumber-richmond-hill",
+   "region": "York Region",
+   "blurb": "Just north of our Thornhill shop, Richmond Hill homeowners rely on us for fast repairs, water heater replacements and renovation plumbing.",
+   "neighbourhoods": [
+    "Oak Ridges",
+    "Bayview Hill",
+    "Mill Pond",
+    "Jefferson",
+    "Richvale",
+    "Westbrook"
+   ],
+   "lat": 43.8828,
+   "lng": -79.4403,
+   "image": {
+    "file": "assets/photos/plumber-richmond-hill-on.webp",
+    "alt": "Plumber adjusting copper water lines under a boiler, plumbing service in Richmond Hill",
+    "pos": "50% 50%",
+    "key": "plumber-richmond-hill-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Mississauga",
+   "slug": "plumber-mississauga",
+   "region": "Peel Region",
+   "blurb": "From Port Credit condos to suburban homes in Meadowvale and Erin Mills, Mississauga properties call on us for drains, water heaters and building work.",
+   "neighbourhoods": [
+    "Port Credit",
+    "Streetsville",
+    "Meadowvale",
+    "Erin Mills",
+    "City Centre",
+    "Cooksville"
+   ],
+   "lat": 43.589,
+   "lng": -79.6441,
+   "image": {
+    "file": "assets/photos/plumber-mississauga-on.webp",
+    "alt": "Plumber in a hard hat repairing a main water shut-off valve, plumbing service in Mississauga",
+    "pos": "50% 40%",
+    "key": "plumber-mississauga-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Brampton",
+   "slug": "plumber-brampton",
+   "region": "Peel Region",
+   "blurb": "Brampton's growing neighbourhoods need reliable plumbing for basement apartments, new fixtures, water heaters and sewer backups after heavy storms.",
+   "neighbourhoods": [
+    "Bramalea",
+    "Springdale",
+    "Mount Pleasant",
+    "Heart Lake",
+    "Castlemore",
+    "Downtown Brampton"
+   ],
+   "lat": 43.7315,
+   "lng": -79.7624,
+   "image": {
+    "file": "assets/photos/plumber-brampton-on.webp",
+    "alt": "New PVC sewer and drain pipe installation for new construction in Brampton",
+    "pos": "45% 55%",
+    "key": "plumber-brampton-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Oakville",
+   "slug": "plumber-oakville",
+   "region": "Halton Region",
+   "blurb": "Oakville homes — from Old Oakville character houses to Glen Abbey family homes — get careful, clean plumbing work and upgrades from our licensed team.",
+   "neighbourhoods": [
+    "Glen Abbey",
+    "Bronte",
+    "Old Oakville",
+    "Kerr Village",
+    "River Oaks",
+    "Joshua Creek"
+   ],
+   "lat": 43.4675,
+   "lng": -79.6877,
+   "image": {
+    "file": "assets/photos/plumber-oakville-on.webp",
+    "alt": "Technician installing a tankless water heater, water heater installation in Oakville",
+    "pos": "50% 50%",
+    "key": "plumber-oakville-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Aurora",
+   "slug": "plumber-aurora",
+   "region": "York Region",
+   "blurb": "Aurora's mix of heritage homes and newer subdivisions keeps us busy with water heater replacements, fixture installs and renovation plumbing.",
+   "neighbourhoods": [
+    "Downtown Aurora",
+    "Aurora Highlands",
+    "Bayview Wellington",
+    "Hills of St. Andrew",
+    "Aurora Grove"
+   ],
+   "lat": 44.0065,
+   "lng": -79.4504,
+   "image": {
+    "file": "assets/photos/plumber-aurora-on.webp",
+    "alt": "Plumber inspecting kitchen sink drain pipes, drain cleaning service in Aurora",
+    "pos": "38% 30%",
+    "key": "plumber-aurora-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Newmarket",
+   "slug": "plumber-newmarket",
+   "region": "York Region",
+   "blurb": "Newmarket homeowners and businesses rely on us for drain cleaning, sewer repair, water heaters and dependable emergency service.",
+   "neighbourhoods": [
+    "Downtown Newmarket",
+    "Glenway",
+    "Stonehaven",
+    "Summerhill Estates",
+    "Woodland Hill"
+   ],
+   "lat": 44.0592,
+   "lng": -79.4613,
+   "image": {
+    "file": "assets/photos/plumber-newmarket-on.webp",
+    "alt": "Licensed plumber connecting a sink P-trap, plumbing service in Newmarket",
+    "pos": "50% 50%",
+    "key": "plumber-newmarket-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Pickering",
+   "slug": "plumber-pickering",
+   "region": "Durham Region",
+   "blurb": "From Bay Ridges near the lake to new homes in Seaton, Pickering properties trust us with repairs, water heaters and sewer service.",
+   "neighbourhoods": [
+    "Bay Ridges",
+    "Amberlea",
+    "Liverpool",
+    "Rosebank",
+    "Duffin Heights",
+    "Seaton"
+   ],
+   "lat": 43.8384,
+   "lng": -79.0868,
+   "image": {
+    "file": "assets/photos/plumber-pickering-on.webp",
+    "alt": "Plumber fitting a new toilet, toilet installation in Pickering",
+    "pos": "50% 50%",
+    "key": "plumber-pickering-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "Ajax",
+   "slug": "plumber-ajax",
+   "region": "Durham Region",
+   "blurb": "Ajax homeowners call us for clogged drains, running toilets, water heater replacements and basement flooding prevention.",
+   "neighbourhoods": [
+    "Pickering Village",
+    "Applecroft",
+    "Riverside",
+    "South Ajax",
+    "North Ajax"
+   ],
+   "lat": 43.8509,
+   "lng": -79.0204,
+   "image": {
+    "file": "assets/photos/plumber-ajax-on.webp",
+    "alt": "Plumber tightening a sink drain pipe with a pipe wrench, plumbing repair in Ajax",
+    "pos": "42% 35%",
+    "key": "plumber-ajax-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  },
+  {
+   "name": "King City",
+   "slug": "plumber-king-city",
+   "region": "York Region",
+   "blurb": "Larger estate homes in King Township mean long service runs, multiple bathrooms and bigger water heating systems — we plan and install them properly.",
+   "neighbourhoods": [
+    "King City",
+    "Nobleton",
+    "Schomberg",
+    "Kettleby",
+    "Laskay"
+   ],
+   "lat": 43.929,
+   "lng": -79.5281,
+   "image": {
+    "file": "assets/photos/plumber-king-city-on.webp",
+    "alt": "Renovated mechanical room with copper piping and a high-efficiency boiler, mechanical service in King City",
+    "pos": "50% 50%",
+    "key": "plumber-king-city-on"
+   },
+   "seo_title": "",
+   "seo_description": ""
+  }
+ ],
+ "faq": {
+  "home": [
+   {
+    "q": "Do you offer 24/7 emergency plumbing in Toronto?",
+    "a": "Yes. Plumbing emergencies don't wait for business hours, so our team is on call 24/7 across Toronto and the GTA for burst pipes, flooding, sewer backups, and no-hot-water situations. Call +1 (647) 919-3677 any time."
+   },
+   {
+    "q": "Which areas do you serve?",
+    "a": "We're based in Thornhill, Ontario and serve Toronto, North York, Scarborough, Etobicoke, Vaughan, Markham, Richmond Hill, Mississauga, Brampton, Oakville and most of the Greater Toronto Area. If you're unsure, call and we'll confirm."
+   },
+   {
+    "q": "Are you licensed and insured?",
+    "a": "Yes. Demir Mechanical & Construction is a licensed, bonded, and fully insured contractor. All work is completed to Ontario code."
+   },
+   {
+    "q": "Do you provide free estimates?",
+    "a": "Yes — we provide free, upfront estimates for installations, renovations, and larger projects, so you know the cost before any work begins."
+   },
+   {
+    "q": "Do you work with property managers and condo buildings?",
+    "a": "Yes. We regularly handle riser renovations, mechanical room upgrades, and ongoing maintenance for multi-unit residential and commercial buildings, coordinating directly with property managers to minimize disruption to residents."
+   }
+  ],
+  "categories": [
+   {
+    "key": "general",
+    "name": "General",
+    "items": [
+     {
+      "q": "Which areas do you serve?",
+      "a": "We're based in Thornhill, Ontario and serve Toronto, North York, Scarborough, Etobicoke, Vaughan, Markham, Richmond Hill, Mississauga, Brampton, Oakville and most of the Greater Toronto Area. If you're unsure, call and we'll confirm."
+     },
+     {
+      "q": "Are you licensed and insured?",
+      "a": "Yes. Demir Mechanical & Construction is a licensed, bonded, and fully insured contractor. All work is completed to Ontario code."
+     },
+     {
+      "q": "Do you provide free estimates?",
+      "a": "Yes — we provide free, upfront estimates for installations, renovations, and larger projects, so you know the cost before any work begins."
+     },
+     {
+      "q": "Is Demir Mechanical a local company?",
+      "a": "Yes. We're a locally owned and operated contractor based at 67 Conley Street in Thornhill, Ontario, serving Toronto and the Greater Toronto Area."
+     },
+     {
+      "q": "What are your business hours?",
+      "a": "Our office is open Monday to Friday, 8:00 AM to 6:00 PM. Emergency plumbing service is available 24/7."
+     }
+    ]
+   },
+   {
+    "key": "emergency",
+    "name": "Emergencies",
+    "items": [
+     {
+      "q": "Do you offer 24/7 emergency plumbing in Toronto?",
+      "a": "Yes. Plumbing emergencies don't wait for business hours, so our team is on call 24/7 across Toronto and the GTA for burst pipes, flooding, sewer backups, and no-hot-water situations. Call +1 (647) 919-3677 any time."
+     },
+     {
+      "q": "What should I do while I wait for an emergency plumber?",
+      "a": "Shut off the main water valve (usually near where the water line enters the house), turn off the water heater if it's leaking, move valuables away from the water, and avoid using drains that are backing up."
+     },
+     {
+      "q": "Where is my main water shut-off valve?",
+      "a": "In most GTA homes it's in the basement on the front wall, near the water meter. In condos it's usually in a closet or under the kitchen or bathroom sink. We can show you during any visit."
+     },
+     {
+      "q": "Do you charge extra for after-hours calls?",
+      "a": "After-hours emergency calls may carry a different rate. We'll always tell you the cost before any work begins."
+     }
+    ]
+   },
+   {
+    "key": "pricing",
+    "name": "Pricing & Estimates",
+    "items": [
+     {
+      "q": "Do you provide free estimates?",
+      "a": "Yes — we provide free, upfront estimates for installations, renovations, and larger projects, so you know the cost before any work begins."
+     },
+     {
+      "q": "How do you price your work?",
+      "a": "We assess the problem first and give you an upfront price before starting. No hidden fees and no surprises on the invoice."
+     },
+     {
+      "q": "Do you guarantee your work?",
+      "a": "Yes. We stand behind our workmanship — if something isn't right with work we completed, call us and we'll make it right."
+     },
+     {
+      "q": "What payment methods do you accept?",
+      "a": "We accept common payment methods including e-transfer, credit and debit. Details are confirmed with your quote."
+     }
+    ]
+   },
+   {
+    "key": "services",
+    "name": "Plumbing Services",
+    "items": [
+     {
+      "q": "How often should drains be cleaned?",
+      "a": "For most homes, every 1–2 years is enough. Restaurants and buildings with heavy use may need cleaning every few months."
+     },
+     {
+      "q": "How long does a water heater last?",
+      "a": "Most tank water heaters last 8–12 years; tankless units can last 20 years with proper maintenance. Rusty water, leaks or not enough hot water are signs it's time to replace."
+     },
+     {
+      "q": "Do I need a backwater valve?",
+      "a": "Many Toronto homes benefit from a backwater valve, which helps prevent sewage backing up into the basement during heavy rain. We can assess your home and install one."
+     },
+     {
+      "q": "Can you install a toilet I bought myself?",
+      "a": "Yes. We install customer-supplied toilets, sinks and fixtures, and can also supply them for you."
+     }
+    ]
+   },
+   {
+    "key": "buildings",
+    "name": "Commercial & Buildings",
+    "items": [
+     {
+      "q": "Do you work with property managers and condo buildings?",
+      "a": "Yes. We regularly handle riser renovations, mechanical room upgrades, and ongoing maintenance for multi-unit residential and commercial buildings, coordinating directly with property managers to minimize disruption to residents."
+     },
+     {
+      "q": "What is a riser renovation?",
+      "a": "Risers are the vertical pipes that carry water and drainage between floors in multi-unit buildings. A riser renovation replaces aging risers to stop leaks, discoloured water and pressure problems."
+     },
+     {
+      "q": "Do you work in occupied buildings?",
+      "a": "Yes. Most of our building projects are completed while residents or tenants remain in place, with planned shut-offs and advance notices."
+     }
+    ]
+   }
+  ]
+ },
+ "reviews": [],
+ "suppliers": [
+  {
+   "name": "EMCO",
+   "logo": "assets/suppliers/emco-logo.png",
+   "url": ""
+  },
+  {
+   "name": "Desco",
+   "logo": "assets/suppliers/desco-logo.png",
+   "url": ""
+  },
+  {
+   "name": "Next",
+   "logo": "assets/suppliers/next-logo.png",
+   "url": ""
+  },
+  {
+   "name": "Wolseley",
+   "logo": "assets/suppliers/wolseley-logo.png",
+   "url": ""
+  },
+  {
+   "name": "Noble",
+   "logo": "assets/suppliers/noble-logo.png",
+   "url": ""
+  }
+ ],
+ "page_header_image": {
+  "file": "",
+  "alt": "",
+  "pos": "50% 50%",
+  "key": "page-header-background-toronto"
+ },
+ "projects": []
+}

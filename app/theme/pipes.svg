@@ -1,0 +1,22 @@
+<svg class="pipes" viewBox="0 0 980 560" fill="none" aria-hidden="true">
+<g stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+<path id="p1" d="M0 470 H250 Q290 470 290 430 V250 Q290 210 330 210 H600 Q640 210 640 250 V400 Q640 440 680 440 H980"/>
+<path d="M420 210 V90 Q420 60 450 60 H980"/>
+<path d="M800 440 V560"/>
+</g>
+<g stroke="#191c21" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+<path d="M0 470 H250 Q290 470 290 430 V250 Q290 210 330 210 H600 Q640 210 640 250 V400 Q640 440 680 440 H980"/>
+<path d="M420 210 V90 Q420 60 450 60 H980"/>
+<path d="M800 440 V560"/>
+</g>
+<g stroke-width="2.2" stroke-linecap="round">
+<path class="flow" d="M0 470 H250 Q290 470 290 430 V250 Q290 210 330 210 H600 Q640 210 640 250 V400 Q640 440 680 440 H980"/>
+<path class="flow" d="M420 210 V90 Q420 60 450 60 H980" style="animation-duration:3.4s"/>
+</g>
+<g stroke="currentColor" stroke-width="2.5">
+<rect x="180" y="455" width="10" height="30" rx="2"/><rect x="500" y="195" width="10" height="30" rx="2"/><rect x="740" y="425" width="10" height="30" rx="2"/><rect x="405" y="140" width="30" height="10" rx="2"/><rect x="620" y="320" width="40" height="10" rx="2"/>
+<circle cx="560" cy="210" r="22"/><path d="M546 196 574 224M574 196 546 224"/>
+<circle cx="820" cy="60" r="26"/><path d="M820 60 834 46"/><path d="M800 60h4M836 60h4M820 40v4"/>
+<circle cx="290" cy="330" r="18"/><path d="M290 312v-12M280 300h20"/>
+</g>
+</svg>

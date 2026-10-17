@@ -1,0 +1,113 @@
+<script>
+(function(){
+  var R=document.documentElement,PV=!!window.DM_PREVIEW,toTop;
+  function reveal(){R.classList.remove('pg-in');}
+  if(PV){
+    // Claude preview only: its viewer can swap pages but keep the old scroll offset, so a new page stays invisible
+    // until it is at the top, then fades in (anchor links like #faq keep their target). The live site uses the
+    // browser's own page changes: no hiding or fading, and Back returns to where you were.
+    var moved=false;
+    toTop=function(){if(location.hash||moved||(window.scrollY||0)<=0)return;var b=R.style.scrollBehavior;R.style.scrollBehavior='auto';window.scrollTo(0,0);R.style.scrollBehavior=b;};
+    try{if('scrollRestoration' in history)history.scrollRestoration='manual';}catch(e){}
+    ['wheel','touchstart','keydown','mousedown'].forEach(function(t){addEventListener(t,function(){moved=true;},{passive:true,once:true});});
+    toTop();requestAnimationFrame(function(){toTop();reveal();});setTimeout(reveal,400);
+    addEventListener('load',toTop);
+  }
+  // Back/Forward can restore this page from memory exactly as it was left: show it, and with the phone menu closed
+  addEventListener('pageshow',function(e){if(e.persisted){reveal();if(links&&links.classList.contains('open'))closeNow();}else if(PV)toTop();});
+  var mq=window.matchMedia('(max-width:1160px)');
+  var burger=document.getElementById('burger'),links=document.getElementById('navlinks');
+  var dClose=document.getElementById('dClose'),bd=document.getElementById('navBackdrop');
+  function setMenu(o){links.classList.toggle('open',o);if(o&&dClose)setTimeout(function(){dClose.focus({preventScroll:true});},60);if(!o&&burger&&links.contains(document.activeElement))burger.focus({preventScroll:true});document.documentElement.classList.toggle('menu-open',o);burger.setAttribute('aria-expanded',o?'true':'false');burger.innerHTML=o?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';}
+  if(burger)burger.addEventListener('click',function(){setMenu(!links.classList.contains('open'));});
+  if(dClose)dClose.addEventListener('click',function(){setMenu(false);});
+  if(bd)bd.addEventListener('click',function(){setMenu(false);});
+  mq.addEventListener('change',function(e){if(!e.matches&&links.classList.contains('open'))setMenu(false);});
+  // Phone/tablet menu: slide a dropdown open/closed by animating its exact height (CSS: open .4s, close .32s), and keep
+  // the tapped heading still while another list above it closes. Desktop keeps its CSS fade.
+  var ACC=400,rm=window.matchMedia('(prefers-reduced-motion:reduce)');
+  function slide(it,open){var d=it.querySelector('.drop');
+    if(!d||!mq.matches||rm.matches){it.classList.toggle('open',open);if(d)d.style.height='';return;}
+    var h=d.getBoundingClientRect().height;it.classList.toggle('open',open);
+    d.style.height=h+'px';void d.offsetHeight;d.style.height=(open?d.scrollHeight:0)+'px';
+    clearTimeout(d._t);d._t=setTimeout(function(){d.style.height='';},ACC+80);}
+  function keep(el,y){var t=performance.now();
+    (function f(){var dy=el.getBoundingClientRect().top-y;if(Math.abs(dy)>.5)links.scrollTop+=dy;if(performance.now()-t<ACC+150)requestAnimationFrame(f);})();}
+  function shut(o){slide(o,false);o.querySelector('.lk').setAttribute('aria-expanded','false');}
+  document.querySelectorAll('.navlinks .item > button.lk').forEach(function(btn){
+    btn.addEventListener('click',function(e){e.preventDefault();var it=btn.parentElement;var open=!it.classList.contains('open');var y=btn.getBoundingClientRect().top;
+      document.querySelectorAll('.navlinks .item.open').forEach(function(o){if(o!==it)shut(o);});
+      slide(it,open);btn.setAttribute('aria-expanded',open?'true':'false');if(mq.matches)keep(btn,y);});});
+  document.addEventListener('click',function(e){if(!mq.matches&&!e.target.closest('.navlinks .item')){document.querySelectorAll('.navlinks .item.open').forEach(shut);}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelectorAll('.navlinks .item.open').forEach(shut);if(links.classList.contains('open'))setMenu(false);}});
+  // A link to another page leaves the menu as it is until that page appears, like any site (closing it first made the
+  // screen move twice); a same-page anchor (#home, #faq…) closes it and scrolls.
+  links.addEventListener('click',function(e){var a=e.target.closest('a');if(!a||!mq.matches)return;var h=a.getAttribute('href')||'';
+    if(h.charAt(0)==='#'||(a.hash&&a.pathname===location.pathname))setMenu(false);});
+  function closeNow(){R.classList.add('no-anim');setMenu(false);void links.offsetWidth;
+    requestAnimationFrame(function(){requestAnimationFrame(function(){R.classList.remove('no-anim');});});}
+  // Email links: assemble the address from reversed parts so it never sits in the page source
+  document.querySelectorAll('[data-mu]').forEach(function(a){var r=function(x){return String(x||'').split('').reverse().join('');};
+    var m=r(a.getAttribute('data-mu'))+String.fromCharCode(64)+r(a.getAttribute('data-md')),sj=a.getAttribute('data-ms');
+    a.href='mailto:'+m+(sj?'?subject='+encodeURIComponent(sj):'');a.querySelectorAll('.em-t').forEach(function(t){t.textContent=m;});});
+  // Social icons: links come from site-links.js (edited on the server); an empty link keeps its icon hidden
+  (function(){var L=window.DM_LINKS||{},urls=[];
+    document.querySelectorAll('[data-social]').forEach(function(a){var u=String(L[a.getAttribute('data-social')]||'').trim();if(/^https?:[/][/][^ ]+$/i.test(u)){a.href=u;a.hidden=false;if(urls.indexOf(u)<0)urls.push(u);}});
+    if(urls.length){document.querySelectorAll('.fsocial').forEach(function(d){d.hidden=false;});
+      try{var j=document.createElement('script');j.type='application/ld+json';j.text=JSON.stringify({'@context':'https://schema.org','@id':'__SITE__/#business','sameAs':urls});document.head.appendChild(j);}catch(x){}}
+  })();
+  // WhatsApp: a number in site-links.js (whatsapp: "1647...") replaces the built-in one; whatsapp: "" hides the buttons
+  (function(){var L=window.DM_LINKS||{};if(!('whatsapp' in L))return;var n=String(L.whatsapp||'').replace(/[^0-9]/g,'');
+    document.querySelectorAll('a[data-wa]').forEach(function(a){if(n.length<8){(a.closest('[data-wa-row]')||a).hidden=true;return;}
+      a.href=a.getAttribute('href').replace(/wa[.]me[/][0-9]+/,'wa.me/'+n);});})();
+  // Google Analytics 4: loads only with a measurement ID (built in, or ga4: "G-..." in site-links.js); never in the Claude preview
+  var GA=String((window.DM_LINKS||{}).ga4||'__GA4__').trim();
+  if(!window.DM_PREVIEW&&/^G-[A-Z0-9]{4,}$/i.test(GA)){window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments);};
+    window.gtag('js',new Date());window.gtag('config',GA);var gs=document.createElement('script');gs.async=true;
+    gs.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA);document.head.appendChild(gs);}
+  function track(n,p){try{if(window.gtag)window.gtag('event',n,p||{});}catch(x){}}
+  // calls, WhatsApp chats and email clicks show up in Analytics as events (mark them as key events there)
+  document.addEventListener('click',function(e){var a=e.target.closest?e.target.closest('a'):null;if(!a)return;var h=a.getAttribute('href')||'';
+    if(h.indexOf('tel:')===0)track('phone_call_click');else if(a.hasAttribute('data-wa'))track('whatsapp_click');else if(h.indexOf('mailto:')===0)track('email_click');},true);
+  // Forms: the live site posts to send.php, which emails the business; the Claude preview only simulates it
+  ['quoteForm','contactForm'].forEach(function(id){var f=document.getElementById(id);if(!f)return;
+    var sent=document.getElementById(id==='quoteForm'?'qsent':'csent'),err=f.querySelector('.f-err'),btn=f.querySelector('button[type=submit]'),lbl=btn?btn.innerHTML:'';
+    var tf=f.querySelector('input[name=t]');if(tf)tf.value=String(Date.now());
+    function ok(){f.hidden=true;if(sent)sent.style.display='block';}
+    function bad(){if(err)err.hidden=false;if(btn){btn.disabled=false;btn.innerHTML=lbl;}}
+    f.addEventListener('submit',function(e){e.preventDefault();if(!f.checkValidity()){f.reportValidity();return;}
+      if(err)err.hidden=true;
+      if(window.DM_PREVIEW){if(sent){var h=sent.querySelector('h3'),p=sent.querySelector('p');if(h)h.textContent='Preview only — not sent';if(p)p.textContent='On the live website this request is emailed to Demir Mechanical.';}ok();return;}
+      var fd=new FormData(f);fd.append('e',String(Date.now()));fd.append('page',location.pathname);
+      if(btn){btn.disabled=true;btn.textContent='Sending…';}
+      fetch(f.getAttribute('action')||'send.php',{method:'POST',body:fd,headers:{'Accept':'application/json'},credentials:'same-origin'})
+        .then(function(r){return r.json().then(function(j){return r.ok&&j&&j.ok;},function(){return false;});})
+        .then(function(s){if(s){ok();track('generate_lead',{form_name:id==='quoteForm'?'request_service':'free_quote'});}else bad();},bad);
+    });});
+  var yr=document.getElementById('yr');if(yr)yr.textContent=new Date().getFullYear();
+})();
+</script><script>
+// Photo viewer for project galleries: click a photo to see it large; arrows, swipe and Esc work
+(function(){var L=[].slice.call(document.querySelectorAll('a[data-lb]'));if(!L.length)return;
+  var R=document.documentElement,box,img,cap,cnt,cur=0,last=null;
+  function sv(d){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+d+'</svg>';}
+  function build(){box=document.createElement('div');box.className='lb';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Photo viewer');
+    box.innerHTML='<button type="button" class="lb-p" aria-label="Previous photo">'+sv('<path d="m15 6-6 6 6 6"/>')+'</button><figure><img alt=""><figcaption></figcaption></figure><button type="button" class="lb-n" aria-label="Next photo">'+sv('<path d="m9 6 6 6-6 6"/>')+'</button><button type="button" class="lb-x" aria-label="Close">'+sv('<path d="M6 6l12 12M18 6 6 18"/>')+'</button><div class="lb-c" aria-live="polite"></div>';
+    document.body.appendChild(box);img=box.querySelector('img');cap=box.querySelector('figcaption');cnt=box.querySelector('.lb-c');
+    if(L.length<2){box.querySelector('.lb-p').hidden=true;box.querySelector('.lb-n').hidden=true;}
+    box.addEventListener('click',function(e){if(e.target.closest('.lb-x'))close();else if(e.target.closest('.lb-p'))show(cur-1);else if(e.target.closest('.lb-n'))show(cur+1);else if(e.target!==img)close();});
+    var x0=null,y0=0;
+    box.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+    box.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+      if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))show(cur+(dx<0?1:-1));},{passive:true});}
+  function show(k){cur=(k+L.length)%L.length;var a=L[cur],t=a.querySelector('img'),c=a.getAttribute('data-cap')||'';
+    img.src=a.getAttribute('href');img.alt=t?t.alt:'';cap.textContent=c;cap.hidden=!c;cnt.textContent=L.length>1?(cur+1)+' / '+L.length:'';
+    if(L.length>1){var pre=new Image();pre.src=L[(cur+1)%L.length].getAttribute('href');}}
+  function open(k){if(!box)build();last=document.activeElement;show(k);box.classList.add('on');R.classList.add('lb-open');
+    setTimeout(function(){box.querySelector('.lb-x').focus({preventScroll:true});},30);}
+  function close(){box.classList.remove('on');R.classList.remove('lb-open');if(last&&last.focus)last.focus({preventScroll:true});}
+  L.forEach(function(a,k){a.addEventListener('click',function(e){if(e.ctrlKey||e.metaKey||e.shiftKey||e.button)return;e.preventDefault();open(k);});});
+  document.addEventListener('keydown',function(e){if(!box||!box.classList.contains('on'))return;
+    if(e.key==='Escape'){e.preventDefault();close();}else if(e.key==='ArrowLeft')show(cur-1);else if(e.key==='ArrowRight')show(cur+1);});
+})();
+</script>
