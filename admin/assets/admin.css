@@ -195,6 +195,16 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--blue);margin:0;fl
 .gal-drop .help{margin-top:8px}
 .gal-st{display:block;margin-top:8px;font-size:13px;font-weight:600;color:var(--blue-d)}
 @media (hover:none){.drag{display:none}.gal-tools{justify-content:flex-end}}
+@media (max-width:560px){                  /* phones: photo + buttons in one row, text fields full width below */
+  .gal-items{grid-template-columns:1fr}
+  .gal-item .imgf{display:grid;grid-template-columns:96px 1fr;gap:8px 12px;align-items:start}
+  .gal-item .imgf-prev{width:96px;aspect-ratio:1;grid-row:span 2}
+  .gal-item .imgf-side{display:contents}
+  .gal-item .imgf-side>.mini{grid-column:1/-1}
+  .gal-item .imgf-name{font-size:12px;align-self:end}
+  .gal-item:first-child .imgf-prev::before{top:5px;left:5px;font-size:10px;padding:2px 6px}
+  .gal-item .imgf-act .btn{padding:6px 10px;font-size:12.5px}
+}
 
 /* save bar */
 .savebar{position:sticky;bottom:0;z-index:20;margin:16px 0 0;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:12px;box-shadow:0 -6px 22px rgba(16,24,40,.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}

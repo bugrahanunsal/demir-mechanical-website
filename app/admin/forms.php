@@ -94,9 +94,10 @@ function render_image(array $v, array $np, array $nt, array $fd, string $id, boo
         . '<div class="imgf-name">' . ($exists ? e(basename($file)) . ' <span class="dim">' . $w . '×' . $h . '</span>' : ($file !== '' ? '<span class="warn">Dosya bulunamadı: ' . e($file) . '</span>' : '')) . '</div>'
         . '<div class="imgf-act"><label class="btn sm">Fotoğraf yükle<input type="file" accept="image/jpeg,image/png,image/webp" class="imgf-up" hidden></label>'
         . '<button type="button" class="btn sm ghost imgf-clear"' . ($file === '' ? ' hidden' : '') . '>Kaldır</button><span class="imgf-st" aria-live="polite"></span></div>';
-    if (empty($fd['noalt'])) $o .= '<label class="mini">Alternatif metin (SEO, ne gösterdiğini İngilizce yazın)<input type="text" class="imgf-alt" name="' . $n('alt') . '" data-n="' . $d('alt') . '" value="' . e((string)($v['alt'] ?? '')) . '"></label>';
+    $altLabel = $caption ? 'Alt metin (SEO, İngilizce)' : 'Alternatif metin (SEO, ne gösterdiğini İngilizce yazın)';
+    if (empty($fd['noalt'])) $o .= '<label class="mini">' . $altLabel . '<input type="text" class="imgf-alt" name="' . $n('alt') . '" data-n="' . $d('alt') . '" value="' . e((string)($v['alt'] ?? '')) . '"></label>';
     else $o .= '<input type="hidden" name="' . $n('alt') . '" data-n="' . $d('alt') . '" value="">';
-    if ($caption) $o .= '<label class="mini">Fotoğraf açıklaması (büyük görünümde altta çıkar)<input type="text" name="' . $n('caption') . '" data-n="' . $d('caption') . '" value="' . e((string)($v['caption'] ?? '')) . '"></label>';
+    if ($caption) $o .= '<label class="mini">Açıklama (büyük görünümde altta)<input type="text" name="' . $n('caption') . '" data-n="' . $d('caption') . '" value="' . e((string)($v['caption'] ?? '')) . '"></label>';
     $o .= pos_select(fld_name(array_merge($np, ['pos'])), fld_name(array_merge($nt, ['pos'])), (string)($v['pos'] ?? '50% 50%'));
     return $o . '</div></div>';
 }

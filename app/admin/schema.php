@@ -359,7 +359,7 @@ function schema_project(): array {
         F('service', 'select', 'Hizmet türü', ['opts' => $svc]),
         F('date', 'text', 'Tamamlanma tarihi', ['h' => 'YYYY-AA (2026-09) veya serbest yazı (Spring 2026)']),
         F('summary', 'textarea', 'Kısa özet (kartlarda ve sayfa başında)', ['req' => true, 'rows' => 2, 'max' => 260]),
-        HD('Fotoğraflar', 'İlk fotoğraf kapak olur. Sürükleyerek veya oklarla sıralayın.'),
+        HD('Fotoğraflar', 'İlk fotoğraf kapak olur; oklarla (bilgisayarda sürükleyerek) sıralayın. Alt metin fotoğrafta ne olduğunu İngilizce anlatır (Google için); boş kalırsa proje başlığı kullanılır.'),
         F('photos', 'gallery', 'Fotoğraflar', ['kind' => 'project']),
         HD('Detaylar'),
         F('description', 'textarea', 'Proje açıklaması', ['rows' => 7, 'h' => 'Paragrafları boş satırla ayırın.']),
