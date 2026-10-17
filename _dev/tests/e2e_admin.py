@@ -66,8 +66,12 @@ def make_site():
     subprocess.run(['php', os.path.join(SITE, '_dev/build.php'), '--out=' + SITE, '--content=' + os.path.join(SITE, 'app/content.default.json')], check=True, capture_output=True)
     with open(os.path.join(SITE, 'form-config.php'), 'w') as f:
         f.write("<?php\nreturn ['to' => 'info@demirmechanical.com', 'from' => 'info@demirmechanical.com', 'smtp_password' => '%s'];\n" % MAILPW)
-    with open(os.path.join(SITE, 'site-links.js'), 'w') as f:
-        f.write('window.DM_LINKS = {\n  facebook:  "https://www.facebook.com/demirmechanical",\n  instagram: "",\n  google:    ""\n};\n')
+    with open(os.path.join(SITE, 'site-links.js'), 'w') as f:          # same layout as the file on the live server
+        f.write('/* Demir Mechanical - social media links (footer icons on every page)\n'
+                '   HOW TO EDIT: Hostinger > File Manager > public_html > site-links.js > Edit.\n'
+                '   Example:   facebook:  "https://www.facebook.com/yourpage",\n'
+                '   Keep the quotes and the commas exactly as they are. */\n'
+                'window.DM_LINKS = {\n  facebook:  "https://www.facebook.com/demirmechanical",\n  instagram: "",\n  google:    ""   /* Google Business Profile (Google Maps) link */\n};\n')
 
 def start_server():
     global server

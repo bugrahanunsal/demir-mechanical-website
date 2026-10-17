@@ -39,11 +39,15 @@ function act_setup(): never {
 function import_site_links(array $c): array {
     $f = DM_ROOT . '/site-links.js';
     if (!is_file($f)) return $c;
-    $js = (string)file_get_contents($f);
+    $js = preg_replace('#/\*.*?\*/#s', '', (string)file_get_contents($f)) ?? '';      // the file explains itself with examples in comments
+    $js = preg_replace('#^\s*//.*$#m', '', $js) ?? '';
+    if (!preg_match('/DM_LINKS\s*=\s*\{(.*?)\}/s', $js, $m)) return $c;
+    $obj = $m[1];
     foreach (['facebook', 'instagram', 'google'] as $k)
-        if (preg_match('/\b' . $k . '\s*:\s*"([^"]*)"/', $js, $m) && preg_match('#^https?://\S+$#i', trim($m[1]))) $c['links'][$k] = trim($m[1]);
-    if (preg_match('/\bwhatsapp\s*:\s*"([^"]*)"/', $js, $m)) $c['links']['whatsapp'] = preg_replace('/\D+/', '', $m[1]);
-    if (preg_match('/\bga4\s*:\s*"(G-[A-Z0-9]{4,14})"/i', $js, $m)) $c['links']['ga4'] = strtoupper($m[1]);
+        if (preg_match('/\b' . $k . '\s*:\s*"([^"]*)"/', $obj, $v) && preg_match('#^https?://\S+$#i', trim($v[1])) && !preg_match('#yourpage|example#i', $v[1]))
+            $c['links'][$k] = trim($v[1]);
+    if (preg_match('/\bwhatsapp\s*:\s*"([^"]*)"/', $obj, $v)) $c['links']['whatsapp'] = preg_replace('/\D+/', '', $v[1]);
+    if (preg_match('/\bga4\s*:\s*"(G-[A-Z0-9]{4,14})"/i', $obj, $v)) $c['links']['ga4'] = strtoupper($v[1]);
     return $c;
 }
 function act_login(): never {
