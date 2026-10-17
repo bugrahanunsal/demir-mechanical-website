@@ -69,6 +69,15 @@ function pystr(string $s): string {
 }
 function ld($o): string { return '<script type="application/ld+json">' . pyjson($o) . '</script>'; }
 
+/** New settings added in later versions come from the defaults; the owner's values and lists always win. */
+function merge_defaults(array $def, array $cur): array {
+    foreach ($def as $k => $v) {
+        if (!array_key_exists($k, $cur)) { $cur[$k] = $v; continue; }
+        if (is_array($v) && is_array($cur[$k]) && !array_is_list($v) && !array_is_list($cur[$k]) && $v !== []) $cur[$k] = merge_defaults($v, $cur[$k]);
+    }
+    return $cur;
+}
+
 /* ---------------- theme files ---------------- */
 function theme(string $name): string {
     static $cache = [];

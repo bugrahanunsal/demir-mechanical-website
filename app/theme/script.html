@@ -50,18 +50,8 @@
   document.querySelectorAll('[data-mu]').forEach(function(a){var r=function(x){return String(x||'').split('').reverse().join('');};
     var m=r(a.getAttribute('data-mu'))+String.fromCharCode(64)+r(a.getAttribute('data-md')),sj=a.getAttribute('data-ms');
     a.href='mailto:'+m+(sj?'?subject='+encodeURIComponent(sj):'');a.querySelectorAll('.em-t').forEach(function(t){t.textContent=m;});});
-  // Social icons: links come from site-links.js (edited on the server); an empty link keeps its icon hidden
-  (function(){var L=window.DM_LINKS||{},urls=[];
-    document.querySelectorAll('[data-social]').forEach(function(a){var u=String(L[a.getAttribute('data-social')]||'').trim();if(/^https?:[/][/][^ ]+$/i.test(u)){a.href=u;a.hidden=false;if(urls.indexOf(u)<0)urls.push(u);}});
-    if(urls.length){document.querySelectorAll('.fsocial').forEach(function(d){d.hidden=false;});
-      try{var j=document.createElement('script');j.type='application/ld+json';j.text=JSON.stringify({'@context':'https://schema.org','@id':'__SITE__/#business','sameAs':urls});document.head.appendChild(j);}catch(x){}}
-  })();
-  // WhatsApp: a number in site-links.js (whatsapp: "1647...") replaces the built-in one; whatsapp: "" hides the buttons
-  (function(){var L=window.DM_LINKS||{};if(!('whatsapp' in L))return;var n=String(L.whatsapp||'').replace(/[^0-9]/g,'');
-    document.querySelectorAll('a[data-wa]').forEach(function(a){if(n.length<8){(a.closest('[data-wa-row]')||a).hidden=true;return;}
-      a.href=a.getAttribute('href').replace(/wa[.]me[/][0-9]+/,'wa.me/'+n);});})();
-  // Google Analytics 4: loads only with a measurement ID (built in, or ga4: "G-..." in site-links.js); never in the Claude preview
-  var GA=String((window.DM_LINKS||{}).ga4||'__GA4__').trim();
+  // Google Analytics 4: loads only when a measurement ID is set in the admin panel; never in previews
+  var GA='__GA4__';
   if(!window.DM_PREVIEW&&/^G-[A-Z0-9]{4,}$/i.test(GA)){window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments);};
     window.gtag('js',new Date());window.gtag('config',GA);var gs=document.createElement('script');gs.async=true;
     gs.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA);document.head.appendChild(gs);}

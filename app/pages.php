@@ -146,8 +146,7 @@ function footer(string $home): string {
     $icons = ['facebook' => ['Facebook', fixed('FB')], 'instagram' => ['Instagram', fixed('IG')], 'google' => ['Google Business Profile', fixed('GG')]];
     $sa = '';
     foreach ($icons as $k => [$lbl, $svg])
-        $sa .= isset($soc[$k]) ? '<a href="' . t($soc[$k]) . '" target="_blank" rel="noopener" aria-label="' . $lbl . '">' . $svg . '</a>'
-                               : '<a data-social="' . $k . '" target="_blank" rel="noopener" aria-label="' . $lbl . '" hidden>' . $svg . '</a>';
+        if (isset($soc[$k])) $sa .= '<a href="' . t($soc[$k]) . '" target="_blank" rel="noopener" aria-label="' . $lbl . '">' . $svg . '</a>';
     $waRow = wa_on() ? '<div class="r" data-wa-row>' . ic('chat') . '<a ' . WAA . '>' . t(cget('whatsapp.footer_text')) . '</a></div>' : '';
     $fab = wa_on() ? '<a class="wa-fab" ' . WAA . ' aria-label="Chat with ' . t(short_name()) . ' on WhatsApp">' . ic('chat') . '<span>' . t(cget('whatsapp.button')) . '</span></a>' : '';
     $fnav = '';
@@ -160,7 +159,7 @@ function footer(string $home): string {
     return "<footer class=\"footer\"><div class=\"wrap\"><div class=\"cols\">\n"
         . '<div><a class="flogo-a" href="' . $home . '" aria-label="' . t(brand()) . ' – Home"><img class="flogo" src="' . t($b['footer_logo']) . '" alt="' . t($b['footer_logo_alt']) . '" width="' . (int)$b['footer_logo_w'] . '" height="' . (int)$b['footer_logo_h'] . '" loading="lazy"></a><p>' . t($F['about']) . "</p>\n"
         . '<a class="fem" href="' . tel() . '">' . ic('phone') . '<span><small>' . t($F['emergency_label']) . '</small><b>' . t(phone()) . "</b></span></a>\n"
-        . '<div class="fsocial"' . ($soc ? '' : ' hidden') . '>' . $sa . "</div></div>\n"
+        . ($soc ? '<div class="fsocial">' . $sa . '</div>' : '') . "</div>\n"
         . '<div><h4>' . t($F['services_title']) . '</h4><ul>' . $sl . "</ul></div>\n"
         . '<div><h4>' . t($F['areas_title']) . '</h4><div class="areas-mini">' . $am . "</div></div>\n"
         . '<div><h4>' . t($F['contact_title']) . "</h4><div class=\"fcontact\">\n"
@@ -633,7 +632,12 @@ function projects(): array {
     return array_values(array_filter(C()['projects'] ?? [], fn($p) => ($p['published'] ?? true) && ($p['slug'] ?? '') !== '' && ($p['title'] ?? '') !== ''));
 }
 function project_url(array $p): string { return 'project-' . $p['slug'] . '.html'; }
-function project_photos(array $p): array { return array_values(array_filter($p['photos'] ?? [], 'img_exists')); }
+/** Photos that exist on the server; a photo without alternative text gets the project title (+ number). */
+function project_photos(array $p): array {
+    $o = array_values(array_filter($p['photos'] ?? [], 'img_exists'));
+    foreach ($o as $i => &$ph) if (trim((string)($ph['alt'] ?? '')) === '') $ph['alt'] = (string)$p['title'] . ($i > 0 ? ' – photo ' . ($i + 1) : '');
+    return $o;
+}
 function service_by_slug(string $slug): ?array { foreach (services() as $s) if ($s['slug'] === $slug) return $s; return null; }
 /** "2026-09" -> "September 2026"; anything else is shown as typed. */
 function project_date(string $d): string {
@@ -763,7 +767,7 @@ function build_pages(): array {
 function render_page(array $pg, bool $preview): string {
     $GLOBALS['DM_PREVIEW'] = $preview;
     $home = $pg['active'] === 'home' ? '#home' : 'index.html';
-    $tail = footer($home) . ld(biz()) . ($pg['extra'] ?? '') . '<script src="site-links.js"></script>' . scripts();
+    $tail = footer($home) . ld(biz()) . ($pg['extra'] ?? '') . scripts();
     $wh = wa_href($pg['path']);
     if ($preview && !empty($pg['skeleton'])) {
         $out = "<title>Demir Mechanical</title>\n<meta name=\"claude:viewport-fit-sides\" content=\"cover\">\n<meta name=\"description\" content=\"" . h($pg['desc']) . "\">\n" . PGIN . "\n"

@@ -696,7 +696,6 @@
    "list_title": "Recent Projects",
    "list_text": "Click a project to see the photos and what we did.",
    "card_button": "View project",
-   "filter_all": "All",
    "home_eyebrow": "Our Work",
    "home_title": "Recent Projects",
    "home_text": "A look at recent jobs our licensed team completed across the GTA.",
@@ -719,11 +718,7 @@
    "side_text": "Talk to a licensed technician — free estimates on installations and renovations.",
    "more_title": "More Projects",
    "all_link": "All projects",
-   "photos": "{count} photos",
-   "photo": "1 photo",
-   "viewer_close": "Close",
-   "viewer_prev": "Previous photo",
-   "viewer_next": "Next photo"
+   "photos": "{count} photos"
   }
  },
  "services": [

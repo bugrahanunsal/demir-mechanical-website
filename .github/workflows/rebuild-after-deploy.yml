@@ -1,0 +1,29 @@
+# After new code is pushed (and Hostinger's Git auto-deployment has pulled it), ask the live site to regenerate its pages.
+# Needs the repository secret DM_HOOK_KEY (admin panel → Hesap & Güvenlik → Geliştirici). Without it this does nothing.
+name: Rebuild pages after deploy
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'admin/**', 'assets/**', 'send.php']
+  workflow_dispatch:
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Call the rebuild hook until the server runs the new version
+        env:
+          DM_HOOK_KEY: ${{ secrets.DM_HOOK_KEY }}
+          DM_SITE: ${{ vars.DM_SITE_URL || 'https://demirmechanical.com' }}
+        run: |
+          if [ -z "$DM_HOOK_KEY" ]; then echo "DM_HOOK_KEY is not set - nothing to do"; exit 0; fi
+          want=$(sed -n "s/^const DM_VERSION = '\(.*\)';/\1/p" app/lib.php)
+          echo "waiting for version $want on $DM_SITE"
+          for i in $(seq 1 12); do
+            sleep 30
+            out=$(curl -s -X POST -H "X-DM-Key: $DM_HOOK_KEY" "$DM_SITE/admin/hook.php" || true)
+            echo "$out"
+            if echo "$out" | grep -q "\"version\":\"$want\""; then echo "pages are up to date"; exit 0; fi
+          done
+          echo "The site never reported version $want. Is Hostinger auto-deployment on? Opening /admin/ also rebuilds."
+          exit 1

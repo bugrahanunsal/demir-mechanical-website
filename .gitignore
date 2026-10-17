@@ -1,0 +1,21 @@
+# Generated on the server by the admin panel (rebuilt from data/content.json); build locally with _dev/build.php
+/*.html
+/sitemap.xml
+/robots.txt
+
+# Site content, passwords, backups and uploaded photos live only on the server
+/data/*
+!/data/.htaccess
+/form-config.php
+/assets/uploads/*
+!/assets/uploads/.htaccess
+
+# Old static-site settings file (replaced by the admin panel)
+/site-links.js
+
+# Local / tools
+.DS_Store
+Thumbs.db
+*.zip
+/_dev/out/
+/node_modules/

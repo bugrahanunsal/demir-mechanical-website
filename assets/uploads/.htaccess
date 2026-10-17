@@ -1,0 +1,5 @@
+# Photos uploaded in the admin panel: images only, never run as code
+Options -ExecCGI -Indexes
+<FilesMatch "\.(php|php\d|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp|html?|svg)$">
+  Require all denied
+</FilesMatch>
