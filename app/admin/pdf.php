@@ -105,8 +105,9 @@ final class DmPdf {
         $res = '<< /Font << /F1 3 0 R /F2 4 0 R >>' . ($xo !== '' ? ' /XObject << ' . $xo . '>>' : '') . ' >>';
         $kids = [];
         foreach ($this->pages as $content) {
-            $z = (string)gzcompress($content, 6);
-            $objs[$n] = ['<< /Length ' . strlen($z) . ' /Filter /FlateDecode >>', $z];
+            $zip = function_exists('gzcompress');                // zlib is standard; without it the page is stored uncompressed
+            $z = $zip ? (string)gzcompress($content, 6) : $content;
+            $objs[$n] = ['<< /Length ' . strlen($z) . ($zip ? ' /Filter /FlateDecode' : '') . ' >>', $z];
             $objs[$n + 1] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' . self::n($this->w) . ' ' . self::n($this->h) . '] /Resources ' . $res . ' /Contents ' . $n . ' 0 R >>';
             $kids[] = ($n + 1) . ' 0 R';
             $n += 2;
