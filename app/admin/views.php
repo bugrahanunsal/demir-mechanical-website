@@ -29,6 +29,7 @@ function aic(string $k): string {
         'eye' => '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
         'sliders' => '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
         'undo' => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+        'code' => '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
     ];
     if (isset($extra[$k])) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $extra[$k] . '</svg>';
     return str_replace('<svg ', '<svg aria-hidden="true" ', ic($k));
@@ -81,7 +82,7 @@ function nav_groups(): array {
         ['İçerik', [['list&k=services', 'Hizmetler', 'wrench'], ['list&k=cities', 'Bölgeler', 'pin'], ['list&k=projects', 'Projeler', 'folder'], $sec('reviews', 'star'), $sec('faq')]],
         ['Sayfalar', [$sec('home'), $sec('about'), $sec('contactpage'), $sec('founder'), $sec('servicepage'), $sec('areapage'), $sec('projectpage'), $sec('blocks', 'layers'), $sec('notfound')]],
         ['Site Ayarları', [$sec('business'), $sec('branding', 'image'), $sec('menu', 'menu'), $sec('links'), $sec('suppliers')]],
-        ['Araçlar', [['seo', 'SEO Paneli', 'search'], ['backups', 'Yedekler', 'archive'], ['account', 'Hesap & Güvenlik', 'key']]],
+        ['Araçlar', [['seo', 'SEO Paneli', 'search'], $sec('custom', 'code'), ['backups', 'Yedekler', 'archive'], ['account', 'Hesap & Güvenlik', 'key']]],
     ];
 }
 
@@ -222,8 +223,17 @@ function view_section(string $key, array $data, array $errors): string {
     if ($errors) $o .= '<div class="flash bad">' . ic('alert') . '<div>Kaydedilmedi: ' . count($errors) . ' alanda düzeltme gerekiyor (kırmızı ile işaretli).</div></div>';
     $o .= '<form method="post" class="edit" data-guard>' . csrf_field() . '<input type="hidden" name="s" value="' . e($key) . '">'
         . '<div class="fields">' . render_fields($S['fields'], $data, [], [], $errors, '') . '</div>'
-        . savebar('save_sec') . '</form>';
+        . savebar('save_sec', $key === 'custom' ? preview_page_select() : '') . '</form>';
     return $o;
+}
+/** Which page "Önizle" opens (custom code can target any page). */
+function preview_page_select(): string {
+    $o = '<label class="pv-page"><span class="sr">Önizlenecek sayfa</span><select name="preview_page" title="Önizlenecek sayfa">';
+    foreach (build_pages() as $pg) {
+        $p = $pg['path'];
+        $o .= '<option value="' . e($p) . '">' . e($p === 'index.html' ? 'Ana sayfa' : $p) . '</option>';
+    }
+    return $o . '</select></label>';
 }
 function savebar(string $action, string $extra = ''): string {
     // the save button comes first in the page so the Enter key never opens the preview
@@ -320,7 +330,7 @@ function seo_report(): array {
         preg_match('/<title>(.*?)<\/title>/s', $html, $m); $title = html_entity_decode($m[1] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
         preg_match('/<meta name="description" content="([^"]*)"/', $html, $m); $desc = html_entity_decode($m[1] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
         preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $html, $m); $h1 = trim(html_entity_decode(strip_tags($m[1] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        $body = preg_replace('/<header.*?<\/header>|<footer.*?<\/footer>/s', '', substr($html, (int)strpos($html, '<body>'))) ?? '';
+        $body = preg_replace('/<header.*?<\/header>|<footer.*?<\/footer>/s', '', substr($html, (int)strpos($html, '<body'))) ?? '';
         $imgs = [];
         preg_match_all('/<img\s[^>]*>/', $body, $mm);
         foreach ($mm[0] as $tag) {

@@ -599,6 +599,64 @@ def t_cleanup(pn, P):
     proj = os.listdir(os.path.join(SITE, 'assets/uploads/projects'))
     check(len([f for f in proj if not f.endswith('-sm.webp')]) == 5, 'project photos kept (an older backup still uses them)')
 
+def t_custom(pn, P):
+    p = pn.p
+    pn.go('sec&s=custom')
+    check(p.locator('h1').inner_text().startswith('Özel Kod'), 'custom code page opens from the menu')
+    css = 'body[data-page="about"] h1 { color: rgb(200, 0, 0) !important; }\n/* </style> must not end the style block */'
+    js = "<script>\ndocument.documentElement.setAttribute('data-custom-js', 'ok');\n</script>"
+    p.fill('[name="f[custom.css]"]', css)
+    p.fill('[name="f[custom.js]"]', js)
+    p.fill('[name="f[custom.head]"]', '<meta name="dm-custom-test" content="head-ok">')
+    p.fill('[name="f[custom.body_start]"]', '<div id="dm-bs-test" hidden></div>')
+    p.fill('[name="f[custom.body_end]"]', '<script>window.dmBodyEnd = 1;</script>')
+    posts = []
+    p.on('request', lambda r: posts.append(r.post_data or '') if r.method == 'POST' else None)
+    pn.save()
+    check('Kaydedildi' in pn.flash(), 'custom code saved')
+    body = ''.join(posts).lower()
+    check('b64%3a' in body and '<script' not in body and '%3cscript' not in body, 'code is sent encoded (no <script> in the form post, firewall-safe)')
+    c = content()['custom']
+    check(c['js'] == "document.documentElement.setAttribute('data-custom-js', 'ok');", 'pasted <script> wrapper removed from the JavaScript field')
+    a = rd('about.html')
+    check('<style id="dm-custom-css">' in a and '<\\/style>' in a and a.index('dm-custom-css') < a.index('</head>'), 'custom CSS in <head>, after the site styles, cannot close the style block')
+    check('<body data-page="about" data-type="about">' in a, 'pages carry data-page / data-type for targeting')
+    check('data-type="service"' in rd('drain-cleaning.html') and 'data-type="city"' in rd('plumber-toronto.html') and 'data-page="index" data-type="home"' in rd('index.html'), 'page types for services, cities and home')
+    check(a.index('<meta name="dm-custom-test" content="head-ok">') < a.index('</head>'), 'head snippet inside <head>')
+    check(re.search(r'<body[^>]*><div id="dm-bs-test" hidden></div>', a) is not None, 'body-start snippet right after <body>')
+    check(a.index('id="dm-custom-js"') < a.index('window.dmBodyEnd = 1;') < a.index('</body>'), 'custom JS and body-end snippet at the end of the page')
+    v = p.context.new_page()
+    v.goto(f'{BASE}/about.html'); v.wait_for_load_state()
+    col = v.evaluate("getComputedStyle(document.querySelector('h1')).color")
+    ok_js = v.evaluate("document.documentElement.getAttribute('data-custom-js') === 'ok' && window.dmBodyEnd === 1")
+    v.goto(f'{BASE}/index.html'); v.wait_for_load_state()
+    col_home = v.evaluate("getComputedStyle(document.querySelector('h1')).color")
+    v.close()
+    check(col == 'rgb(200, 0, 0)' and col_home != 'rgb(200, 0, 0)', f'CSS for one page applies only there ({col} / {col_home})')
+    check(ok_js, 'custom JavaScript and body-end script run on the live page')
+    # a tag-style snippet in the JavaScript field is refused with a hint
+    pn.go('sec&s=custom')
+    p.fill('[name="f[custom.js]"]', '<script async src="https://example.com/x.js"></script>')
+    pn.save()
+    check('HTML alanlarına' in p.locator('.ferr').first.inner_text(), 'tag snippet in the JavaScript field is refused with a hint')
+    check(content()['custom']['js'].startswith('document.documentElement'), 'nothing saved after the error')
+    # preview a chosen page with unsaved custom code
+    pn.go('sec&s=custom')
+    p.fill('[name="f[custom.css]"]', 'body[data-page="faq"] h1 { color: rgb(0, 150, 0); }')
+    p.select_option('select[name=preview_page]', 'faq.html')
+    with p.context.expect_page() as newp:
+        p.click('button[name=a][value=preview]')
+    pv = newp.value; pv.wait_for_load_state()
+    check('ÖNİZLEME' in pv.content() and pv.evaluate("getComputedStyle(document.querySelector('h1')).color") == 'rgb(0, 150, 0)', 'preview of a chosen page with unsaved custom CSS')
+    pv.close()
+    check(p.locator('[name="f[custom.css]"]').input_value().startswith('body[data-page="faq"]'), 'code field keeps its text after preview')
+    # switch everything off without deleting it
+    p.locator('[name="f[custom.enabled]"][type=checkbox]').uncheck()
+    pn.save()
+    a = rd('about.html')
+    check('dm-custom-css' not in a and 'dm-custom-test' not in a and 'dmBodyEnd' not in a and 'data-page="about"' in a, 'switched off: no custom code on the pages')
+    check(content()['custom']['css'].startswith('body[data-page="faq"]'), 'switched off: the code itself is kept')
+
 def t_version_rebuild(pn, P):
     pub = json.loads(rd('data/published.json')); pub['version'] = '2000.01.01'
     open(os.path.join(SITE, 'data/published.json'), 'w').write(json.dumps(pub))
@@ -661,7 +719,7 @@ def t_mobile(pn, P, browser):
     check(sw <= 390, f'phone: no sideways scrolling in the editor ({sw}px)')
     bar = m.locator('.savebar').bounding_box()
     check(bar and bar['y'] + bar['height'] <= 844 + 1, 'phone: save bar visible at the bottom')
-    for q in ['list&k=services', 'item&k=projects&i=0', 'seo', 'backups', 'account', 'sec&s=menu']:
+    for q in ['list&k=services', 'item&k=projects&i=0', 'seo', 'backups', 'account', 'sec&s=menu', 'sec&s=custom']:
         m.goto(ADMIN + 'index.php?p=' + q); m.wait_for_load_state()
         sw = m.evaluate('document.documentElement.scrollWidth')
         check(sw <= 390, f'phone: {q} fits the screen ({sw}px)')
@@ -680,7 +738,7 @@ def t_parity(pn, P):
 
 TESTS = [('setup', t_setup), ('login', t_login), ('security', t_security), ('business', t_business), ('menu', t_menu), ('branding', t_branding),
          ('services', t_services), ('cities', t_cities), ('projects', t_projects), ('reviews_faq', t_reviews_faq), ('seo', t_seo),
-         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('version', t_version_rebuild), ('account', t_account),
+         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('custom', t_custom), ('version', t_version_rebuild), ('account', t_account),
          ('mobile', t_mobile), ('parity', t_parity)]
 
 def main():

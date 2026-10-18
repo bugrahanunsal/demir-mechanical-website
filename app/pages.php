@@ -735,6 +735,35 @@ function page_project(array $p): array {
             'extra' => crumbs([['Home', ''], [$T['breadcrumb'], 'projects.html'], [$p['title'], project_url($p)]]), 'h1' => $p['title']];
 }
 
+/* ---------------- custom code from the admin panel (Araçlar → Özel Kod) ---------------- */
+/** Page type for <body data-type>, so custom CSS can target one kind of page. */
+function page_kind(string $path): string {
+    $slug = preg_replace('/\.html$/', '', $path);
+    $fixed = ['index' => 'home', 'services' => 'services', 'service-areas' => 'areas', 'projects' => 'projects', 'about' => 'about', 'contact' => 'contact', 'faq' => 'faq', '404' => '404'];
+    if (isset($fixed[$slug])) return $fixed[$slug];
+    foreach (services() as $s) if ($s['slug'] === $slug) return 'service';
+    foreach (cities() as $x) if ($x['slug'] === $slug) return 'city';
+    return str_starts_with($slug, 'project-') ? 'project' : 'page';
+}
+function body_attrs(string $path): string {
+    return ' data-page="' . t(preg_replace('/\.html$/', '', $path)) . '" data-type="' . page_kind($path) . '"';
+}
+function custom_on(): bool { return !empty(cget('custom.enabled', true)); }
+/** Custom CSS comes after the site's own styles, so it wins. */
+function custom_css(): string {
+    $css = trim((string)cget('custom.css'));
+    return custom_on() && $css !== '' ? '<style id="dm-custom-css">' . str_ireplace('</style', '<\/style', $css) . '</style>' : '';
+}
+/** Custom JavaScript runs after the site's own script. */
+function custom_js(): string {
+    $js = trim((string)cget('custom.js'));
+    return custom_on() && $js !== '' ? '<script id="dm-custom-js">' . str_ireplace('</script', '<\/script', $js) . '</script>' : '';
+}
+/** Ready-made HTML snippets (tracking codes, chat widgets): live pages only, never in the Claude preview. */
+function custom_html(string $where): string {
+    return custom_on() && empty($GLOBALS['DM_PREVIEW']) ? trim((string)cget('custom.' . $where)) : '';
+}
+
 /* ---------------- whole document ---------------- */
 function head_full(array $pg): string {
     $site = site_url(); $path = $pg['path'];
@@ -745,7 +774,7 @@ function head_full(array $pg): string {
     return '<!doctype html><html lang="' . t(cget('site.lang', 'en-CA')) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' . PGIN
         . '<title>' . h($pg['title']) . '</title><meta name="description" content="' . h($pg['desc']) . '"><link rel="canonical" href="' . $url . '">'
         . '<meta property="og:type" content="website"><meta property="og:title" content="' . h($pg['title']) . '"><meta property="og:description" content="' . h($pg['desc']) . '"><meta property="og:url" content="' . $url . '"><meta property="og:image" content="' . $site . '/' . t($og) . '"><meta property="og:locale" content="' . t(cget('site.og_locale', 'en_CA')) . '">'
-        . '<meta name="geo.region" content="' . t(cget('site.geo_region')) . '"><meta name="geo.placename" content="' . t(cget('site.geo_placename')) . '">' . $verTag . ($pg['head_extra'] ?? '') . icons_head() . fixed('FONTS') . css() . '</head><body>';
+        . '<meta name="geo.region" content="' . t(cget('site.geo_region')) . '"><meta name="geo.placename" content="' . t(cget('site.geo_placename')) . '">' . $verTag . ($pg['head_extra'] ?? '') . icons_head() . fixed('FONTS') . css() . custom_css() . custom_html('head') . '</head><body' . body_attrs($path) . '>';
 }
 
 /** All pages: path => ['live' => html, 'preview' => html, 'meta' => [...]] */
@@ -767,17 +796,17 @@ function build_pages(): array {
 function render_page(array $pg, bool $preview): string {
     $GLOBALS['DM_PREVIEW'] = $preview;
     $home = $pg['active'] === 'home' ? '#home' : 'index.html';
-    $tail = footer($home) . ld(biz()) . ($pg['extra'] ?? '') . scripts();
+    $tail = footer($home) . ld(biz()) . ($pg['extra'] ?? '') . scripts() . custom_js() . custom_html('body_end');
     $wh = wa_href($pg['path']);
     if ($preview && !empty($pg['skeleton'])) {
         $out = "<title>Demir Mechanical</title>\n<meta name=\"claude:viewport-fit-sides\" content=\"cover\">\n<meta name=\"description\" content=\"" . h($pg['desc']) . "\">\n" . PGIN . "\n"
-            . icons_head() . "\n" . fixed('FONTS') . "\n" . css() . "\n"
+            . icons_head() . "\n" . fixed('FONTS') . "\n" . css() . custom_css() . "\n"
             . "<style>/* artifact wrapper pads :root by the safe-area insets — do not add them again */:root{--sat:0px;--sab:0px}</style>\n"
-            . "<script>window.DM_PREVIEW=1</script>\n"
+            . "<script>window.DM_PREVIEW=1;document.body.setAttribute('data-page','" . preg_replace('/\.html$/', '', $pg['path']) . "');document.body.setAttribute('data-type','" . page_kind($pg['path']) . "')</script>\n"
             . nav($pg['active'], $pg['path']) . $pg['body'] . $tail;
     } else {
-        $full = head_full($pg) . nav($pg['active'], $pg['path']) . $pg['body'] . $tail . '</body></html>';
-        $out = $preview ? preg_replace('/<body>/', '<body><script>window.DM_PREVIEW=1</script>', $full, 1) : str_replace(PGIN, '', $full);
+        $full = head_full($pg) . custom_html('body_start') . nav($pg['active'], $pg['path']) . $pg['body'] . $tail . '</body></html>';
+        $out = $preview ? preg_replace('/<body([^>]*)>/', '<body$1><script>window.DM_PREVIEW=1</script>', $full, 1) : str_replace(PGIN, '', $full);
     }
     return str_replace('__WAHREF__', $wh, $out);
 }

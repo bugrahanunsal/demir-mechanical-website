@@ -309,6 +309,18 @@ function schema_sections(): array {
         F('pages.notfound.button_services', 'text', 'Buton 1'), F('pages.notfound.button_areas', 'text', 'Buton 2'), F('pages.notfound.button_contact', 'text', 'Buton 3'),
         F('pages.notfound.seo_title', 'text', 'Tarayıcı başlığı'), F('pages.notfound.seo_description', 'textarea', 'Açıklama', ['rows' => 2]),
     ]],
+    /* ------------------------------------------------------------------ */
+    'custom' => ['title' => 'Özel Kod (CSS / JS)', 'icon' => 'code', 'intro' => 'Geliştiriciler için: sitenin bütün sayfalarına kendi CSS, JavaScript veya hazır HTML kodunuzu ekleyin (tasarım ince ayarları, Meta Pixel, Google Tag Manager, canlı destek vb.). Kaydetmeden önce Önizle ile kontrol edin. Bir şey bozulursa "Özel kodları uygula" işaretini kaldırıp kaydedin ya da Yedekler\'den önceki hale dönün.', 'fields' => [
+        F('custom.enabled', 'check', 'Özel kodları uygula', ['h' => 'İşareti kaldırırsanız kodlar silinmez, sadece siteden kalkar. Sorun ararken işe yarar.']),
+        HD('CSS', 'Sitenin kendi stillerinden sonra yüklenir, yani onları ezer. Tek bir sayfa için: body[data-page="drain-cleaning"] h1 { … }. Bir türdeki bütün sayfalar için: body[data-type="service"] … — türler: home, services, service, areas, city, projects, project, about, contact, faq, 404.'),
+        F('custom.css', 'code', 'Özel CSS', ['lang' => 'css', 'rows' => 14, 'ph' => "/* Örnek: ana sayfa başlığını büyüt */\nbody[data-page=\"index\"] .hero h1 { font-size: 3.4rem; }"]),
+        HD('JavaScript', 'Her sayfanın en sonunda, sitenin kendi kodundan sonra çalışır. Buraya <script> etiketi yazmayın; etiketli hazır kodlar aşağıdaki HTML alanlarına gider.'),
+        F('custom.js', 'code', 'Özel JavaScript', ['lang' => 'js', 'rows' => 10, 'ph' => "// Örnek\ndocument.documentElement.classList.add('ozel');"]),
+        HD('Hazır kod parçaları (HTML)', 'Meta Pixel, Google Tag Manager, Hotjar, canlı destek gibi servislerin verdiği kodları olduğu gibi yapıştırın. Google Analytics için WhatsApp & Bağlantılar\'daki alanı kullanın (iki kez yüklenmesin). Bu kodlar Claude önizlemesinde çalışmaz, sadece canlı sitede.'),
+        F('custom.head', 'code', '<head> içine', ['lang' => 'html', 'rows' => 8, 'h' => 'Doğrulama etiketleri ve takip kodları (ör. Google Tag Manager\'ın ilk kodu, Meta Pixel).']),
+        F('custom.body_start', 'code', '<body> açılışından hemen sonra', ['lang' => 'html', 'rows' => 5, 'h' => 'Ör. Google Tag Manager\'ın <noscript> kodu.']),
+        F('custom.body_end', 'code', '</body> kapanmadan hemen önce', ['lang' => 'html', 'rows' => 8, 'h' => 'Canlı destek / sohbet kutuları ve diğer ek scriptler.']),
+    ]],
     ];
 }
 

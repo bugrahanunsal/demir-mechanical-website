@@ -46,6 +46,12 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
 * **Yedekler:** automatic backup before every save (last 60), one-click restore, download `content.json`, download a **full zip**
   of the site (pages + panel + photos + content, without passwords), import a `content.json`, delete uploads no backup uses.
 * **Önizle:** every editor can preview the page with unsaved changes in a new tab (nothing is written).
+* **Özel Kod (CSS / JS):** custom CSS (after the site styles), custom JavaScript (end of every page) and raw HTML snippets for
+  `<head>`, right after `<body>` and before `</body>` (Meta Pixel, Tag Manager, chat widgets). An on/off switch keeps the code but
+  removes it from the pages. Every page has `<body data-page="…" data-type="…">` (types: home, services, service, areas, city,
+  projects, project, about, contact, faq, 404) so CSS can target one page or one kind of page. The panel sends code fields
+  base64-encoded (`b64:` prefix) so hosting firewalls that block posts containing `<script>` don't interfere. HTML snippets are
+  left out of the Claude preview build.
 * Photo uploads: phone photos are resized in the browser (≤2400 px) and on the server (WebP, 1600 px + 700 px `-sm` copy for
   phones), turned upright from EXIF, named from the alt text / title, unique names (images are cached for 6 months).
 

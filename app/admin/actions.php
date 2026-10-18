@@ -230,6 +230,8 @@ function act_preview(): never {
     if (isset($_POST['s'])) {
         $new = parse_section((string)$_POST['s'], $errors);
         $page = section_page((string)$_POST['s']);
+        $want = (string)($_POST['preview_page'] ?? '');
+        if (preg_match(DM_PAGE_RE, $want)) $page = $want;
     } else {
         $kind = (string)($_POST['k'] ?? ''); kind_or_404($kind);
         $idx = (string)($_POST['i'] ?? 'new');
@@ -247,7 +249,7 @@ function act_preview(): never {
     $note = $errors ? ' · ' . count($errors) . ' alanda hata var, kaydetmeden önce düzeltin' : '';
     $banner = '<script>window.DM_PREVIEW=1</script><div style="position:fixed;z-index:2147483647;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 6px);background:#b45309;color:#fff;font:600 13px/1.3 system-ui,sans-serif;padding:7px 14px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;max-width:92vw;text-align:center">ÖNİZLEME — henüz kaydedilmedi' . e($note) . '</div>';
     $html = preg_replace('/<head>/', '<head><base href="../">', $html, 1);
-    $html = preg_replace('/<body>/', '<body>' . $banner, $html, 1);
+    $html = preg_replace_callback('/<body([^>]*)>/', fn($m) => '<body' . $m[1] . '>' . $banner, $html, 1);
     header_remove('Content-Security-Policy');
     header("Content-Security-Policy: frame-ancestors 'none'; form-action 'none'");
     header('Content-Type: text/html; charset=utf-8');

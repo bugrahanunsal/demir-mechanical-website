@@ -1569,5 +1569,13 @@
   "pos": "50% 50%",
   "key": "page-header-background-toronto"
  },
- "projects": []
+ "projects": [],
+ "custom": {
+  "enabled": true,
+  "css": "",
+  "js": "",
+  "head": "",
+  "body_start": "",
+  "body_end": ""
+ }
 }

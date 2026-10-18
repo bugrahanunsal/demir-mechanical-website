@@ -23,4 +23,6 @@ the admin panel UI is Turkish.
 - Uploaded images are cached by browsers for 6 months: always write new files with unique names (`unique_path()`), never overwrite.
 - Read auth/state files with `file_get_contents`, not `include` (OPcache can serve stale copies right after a write).
 - Panel saves are all-or-nothing: render everything in memory first (`render_all`), then back up, then write (`content_save`).
+- Custom code (Araçlar → Özel Kod, `content.custom`) is injected by `custom_css()`, `custom_js()`, `custom_html()` in `app/pages.php`.
+  Pages carry `<body data-page data-type>`; anything that looks for the body tag must allow attributes (`/<body([^>]*)>/`).
 - Commit messages end with the attribution lines required by the session.

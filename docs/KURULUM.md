@@ -30,6 +30,7 @@ Panel adresi: **https://demirmechanical.com/admin/**
 | Google başlıkları, açıklamalar, fotoğraf adları ve alt metinleri | Araçlar → SEO Paneli |
 | Bir değişikliği geri almak, yedek indirmek | Araçlar → Yedekler |
 | Şifre değiştirme | Araçlar → Hesap & Güvenlik |
+| Geliştirici için özel CSS / JavaScript / takip kodları | Araçlar → Özel Kod |
 
 - **Kaydet ve yayınla** düğmesi değişikliği hemen siteye koyar (önbellek temizlemeye gerek yok).
 - **Önizle** düğmesi kaydetmeden önce sayfanın nasıl görüneceğini yeni sekmede gösterir.

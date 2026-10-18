@@ -45,6 +45,9 @@ function render_field(array $fd, array $data, array $parts, array $tpl, array $e
             return '<div class="' . $cls . ' fnum">' . $lab . '<input type="text" inputmode="decimal" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e(is_scalar($val) ? (string)$val : '') . '">' . $help . $er . '</div>';
         case 'textarea':
             return '<div class="' . $cls . '">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" rows="' . (int)($fd['rows'] ?? 3) . '"' . $max . $seo . '>' . e(is_scalar($val) ? (string)$val : '') . '</textarea>' . $help . $er . '</div>';
+        case 'code':
+            return '<div class="' . $cls . ' fcode">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" data-code="' . e($fd['lang'] ?? 'html') . '" rows="' . (int)($fd['rows'] ?? 10) . '" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"'
+                . (isset($fd['ph']) ? ' placeholder="' . e($fd['ph']) . '"' : '') . '>' . e(is_scalar($val) ? (string)$val : '') . '</textarea>' . $help . $er . '</div>';
         case 'lines':
             $txt = is_array($val) ? implode("\n", array_map('strval', $val)) : (string)$val;
             return '<div class="' . $cls . '">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" rows="' . (int)($fd['rows'] ?? 4) . '">' . e($txt) . '</textarea>' . $help . $er . '</div>';
@@ -216,6 +219,11 @@ function parse_fields(array $fields, array $post, array $data, array &$errors, s
             case 'textarea':
                 if (!$has) break;
                 path_set($data, $k, validate_value($fd, clean_text($raw), $p, $errors)); break;
+            case 'code':
+                if (!$has) break;
+                $code = parse_code($fd, (string)$raw, $p, $errors);
+                if ($code !== null) path_set($data, $k, $code);
+                break;
             case 'lines':
                 if (!$has) break;
                 $lines = array_values(array_filter(array_map('trim', explode("\n", clean_text($raw))), 'strlen'));
@@ -291,6 +299,26 @@ function parse_fields(array $fields, array $post, array $data, array &$errors, s
         }
     }
     return $data;
+}
+/**
+ * Code fields (custom CSS / JS / HTML). The panel's script sends them base64-encoded ("b64:…") so a hosting firewall that
+ * blocks form posts containing <script> never gets in the way; plain text is accepted as well.
+ */
+function parse_code(array $fd, string $v, string $p, array &$errors): ?string {
+    if (str_starts_with($v, 'b64:')) {
+        $d = base64_decode(substr($v, 4), true);
+        if ($d === false || !mb_check_encoding($d, 'UTF-8')) { $errors[$p] = 'Kod okunamadı; sayfayı yenileyip tekrar deneyin.'; return null; }
+        $v = $d;
+    }
+    $v = trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', str_replace(["\r\n", "\r"], "\n", $v)) ?? '');
+    $lang = $fd['lang'] ?? 'html';
+    // pasted with its own <style> / <script> wrapper: keep only what is inside
+    if ($lang === 'css' && preg_match('#^<style\b[^>]*>(.*)</style>$#is', $v, $m) && stripos($m[1], '<style') === false) $v = trim($m[1]);
+    if ($lang === 'js' && preg_match('#^<script\b([^>]*)>(.*)</script>$#is', $v, $m) && stripos($m[2], '<script') === false && stripos($m[1], 'src=') === false) $v = trim($m[2]);
+    if ($lang === 'css' && preg_match('#<(style|script|link|meta)\b#i', $v)) $errors[$p] = 'Bu alana sadece CSS yazın. <link> veya <script> içeren kodları aşağıdaki "<head> içine" alanına yapıştırın.';
+    if ($lang === 'js' && preg_match('#<script\b#i', $v)) $errors[$p] = 'Bu alana sadece JavaScript yazın. <script> etiketli hazır kodları (Meta Pixel, Tag Manager vb.) aşağıdaki HTML alanlarına yapıştırın.';
+    if (mb_strlen($v) > 200000) $errors[$p] = 'Kod çok uzun (en fazla 200.000 karakter).';
+    return $v;
 }
 function rep_defaults(array $fd): array { return is_array($fd['new'] ?? null) ? $fd['new'] : []; }
 /** Branding hidden inputs (logo uploads) are plain top-level paths. */

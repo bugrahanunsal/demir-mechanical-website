@@ -321,3 +321,13 @@ body.auth{display:grid;place-items:center;min-height:100vh;padding:20px;backgrou
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--char);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;font-weight:600;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:92vw;text-align:center}
+
+/* code fields (Özel Kod) */
+.fcode textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:13.5px;line-height:1.55;tab-size:2;-moz-tab-size:2;
+  white-space:pre;overflow-wrap:normal;overflow-x:auto;min-height:150px;background:#14171c;color:#e8edf2;border-color:#14171c;caret-color:#7eaad6}
+.fcode textarea::placeholder{color:#6b7684}
+.fcode textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,106,168,.28)}
+@media (max-width:560px){.fcode textarea{font-size:16px}}
+.pv-page select{width:auto;max-width:230px;font-size:14px;padding:9px 32px 9px 12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:560px){.sb-act{flex-wrap:wrap-reverse}.pv-page{width:100%}.pv-page select{max-width:none;width:100%}}

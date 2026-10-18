@@ -21,7 +21,7 @@
   function slugify(s) {
     var map = { 'ı': 'i', 'İ': 'i', 'ş': 's', 'Ş': 's', 'ğ': 'g', 'Ğ': 'g', 'ü': 'u', 'Ü': 'u', 'ö': 'o', 'Ö': 'o', 'ç': 'c', 'Ç': 'c', '&': ' and ' };
     s = String(s || '').replace(/[ıİşŞğĞüÜöÖçÇ&]/g, function (c) { return map[c]; });
-    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+    try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}
     return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
   function iconSvg(k) {
@@ -59,6 +59,32 @@
   // Enter in a one-line field should not send the form
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && e.target.matches && e.target.matches('form.edit input[type=text]')) e.preventDefault();
+  });
+
+  /* ---------- code fields (Özel Kod) ---------- */
+  // Sent base64-encoded: some hosting firewalls refuse any form post that contains "<script".
+  function b64(s) { var b = new TextEncoder().encode(s), o = ''; for (var i = 0; i < b.length; i++) o += String.fromCharCode(b[i]); return btoa(o); }
+  document.addEventListener('submit', function (e) {
+    if (e.defaultPrevented) return;
+    var f = e.target, made = [];
+    $$('textarea[data-code]', f).forEach(function (ta) {
+      if (!ta.name || ta.value === '') return;
+      var h = document.createElement('input'); h.type = 'hidden'; h.name = ta.name; h.value = 'b64:' + b64(ta.value);
+      ta.setAttribute('data-name', ta.name); ta.removeAttribute('name'); f.appendChild(h); made.push([ta, h]);
+    });
+    if (made.length) setTimeout(function () { made.forEach(function (p) { p[0].name = p[0].getAttribute('data-name'); p[1].remove(); }); }, 0);
+  });
+  // Tab types two spaces in a code field; press Esc first to move on with Tab
+  document.addEventListener('keydown', function (e) {
+    var ta = e.target;
+    if (!ta.matches || !ta.matches('textarea[data-code]')) return;
+    if (e.key === 'Escape') { ta._tabOut = true; return; }
+    if (e.key !== 'Tab' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || ta._tabOut) { ta._tabOut = false; return; }
+    e.preventDefault();
+    var a = ta.selectionStart, b = ta.selectionEnd;
+    ta.value = ta.value.slice(0, a) + '  ' + ta.value.slice(b);
+    ta.selectionStart = ta.selectionEnd = a + 2;
+    markDirty(ta.closest('form'));
   });
 
   /* ---------- repeaters ---------- */
