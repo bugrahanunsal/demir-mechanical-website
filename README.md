@@ -53,13 +53,18 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
   duplicates, H1, word count, alt texts, file names, sharing image). It updates while typing (`a=seo_check`, nothing saved).
   Code: `app/admin/seo.php`; per-page settings `seo_title`, `seo_description`, `seo_keyphrase`, `og_image` ('' = automatic,
   'none' = no image) live at `pages.<page>` or on the service / area / project item (`page_base()` in `app/pages.php`).
-* **Galeri:** every image of the site in one grid, wherever it was uploaded (services, areas, projects, home page, founder,
-  logos, sharing images, the site's own `assets/photos`, unused uploads), with file name and alternative text on each card;
-  search and filters (photos / sharing images / logos / missing alt / unused). A click opens a window (deep link
-  `?p=media&open=<file>`, previous/next) with the large photo, size, every place that uses it (links to the editor and the page),
-  and the editable **alt text** (written to every use; empty refused unless all uses are project gallery photos, which fall back to
-  the project title) and **file name** (same rename as the SEO panel). Nothing is stored for the gallery itself: it is read from
-  the content and the photo folders (`app/admin/media.php`).
+* **Galeri:** a media library. A grid of picture tiles (name on hover; marks for "Alt yok" / "Kullanılmıyor") with search and
+  filters; a click shows the photo's details in a panel on the right (on screens under 1100 px a drawer over the page; deep link
+  `?p=media&open=<file>`, ←/→ for previous/next, Esc closes): large preview, size, every place that uses it (links to the editor
+  and the page), the editable **alt text** (written to every use; empty refused unless all uses are project gallery photos) and
+  **file name** (same rename as the SEO panel), and **Sil** for uploads nothing uses (photo + phone copy; warns when an older
+  backup still points to it). **Fotoğraf ekle** (button or drag and drop anywhere on the page) uploads several photos (kind
+  `photo`, named after the original file) and adds them to `content.library` (`{file, alt, added}`) in one save; the first new
+  photo opens with the alt field focused. Library photos stay listed until used; editors use them with **Galeriden seç** (every
+  photo/hero/portrait field) and **Galeriden ekle** (project galleries), which fill in the photo's alt text (`?p=media_pick`
+  JSON). "Tümü" = used photos + library photos + logos; old copies nothing uses (replaced or renamed photos) appear only under
+  "Kullanılmayan". `content.library` is ignored by `media_refs()` (not a use), but keeps the files safe from the cleanup tool and
+  is updated by renames (`replace_file_refs`). Code: `app/admin/media.php`.
 * **Faturalar (İşletme):** invoices for the business's customers, as PDF. Stored in `data/invoices.json` (mode 0600, never in
   git or the content; a copy goes to `data/backups/invoices-*.json` before every change, the full zip backup includes it).
   List with unpaid / this month / paid this year, search and filters (Ödenmemiş, Gecikmiş = past the due date, Ödendi, Taslak,
@@ -126,7 +131,7 @@ php _dev/build.php --out=.  && php -S 127.0.0.1:8080 -t . _dev/router.php
 Tests:
 
 ```bash
-python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~220 checks, ~3 min)
+python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~315 checks, ~6 min)
 python3 _dev/tests/site_features.py  # WhatsApp / Analytics / social links in the generated pages
 python3 _dev/tests/parity.py A B     # compare two built sites page by page (normalised)
 ```

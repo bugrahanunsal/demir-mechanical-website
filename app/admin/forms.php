@@ -114,6 +114,7 @@ function render_image(array $v, array $np, array $nt, array $fd, string $id, boo
         . (isset($v['key']) ? '<input type="hidden" name="' . $n('key') . '" data-n="' . $d('key') . '" value="' . e((string)$v['key']) . '">' : '')
         . '<div class="imgf-name">' . ($exists ? e(basename($file)) . ' <span class="dim">' . $w . '×' . $h . '</span>' : ($file !== '' ? '<span class="warn">Dosya bulunamadı: ' . e($file) . '</span>' : '')) . '</div>'
         . '<div class="imgf-act"><label class="btn sm">Fotoğraf yükle<input type="file" accept="image/jpeg,image/png,image/webp" class="imgf-up" hidden></label>'
+        . (!$caption && in_array($fd['kind'] ?? 'photo', ['photo', 'hero', 'portrait'], true) ? '<button type="button" class="btn sm imgf-pick">Galeriden seç</button>' : '')
         . '<button type="button" class="btn sm ghost imgf-clear"' . ($file === '' ? ' hidden' : '') . '>Kaldır</button><span class="imgf-st" aria-live="polite"></span></div>';
     $altLabel = $caption ? 'Alt metin (SEO, İngilizce)' : 'Alternatif metin (SEO, ne gösterdiğini İngilizce yazın)';
     if (empty($fd['noalt'])) $o .= '<label class="mini">' . $altLabel . '<input type="text" class="imgf-alt" name="' . $n('alt') . '" data-n="' . $d('alt') . '" value="' . e((string)($v['alt'] ?? '')) . '"></label>';
@@ -173,7 +174,8 @@ function render_gallery(array $fd, array $items, array $np, array $nt, array $er
     $o = '<div class="gal" data-kind="' . e($fd['kind'] ?? 'project') . '"><div class="gal-items rep-items">';
     foreach ($items as $i => $v) $o .= $one(is_array($v) ? $v : [], array_merge($np, [$i]), array_merge($nt, [$ph]));
     $o .= '</div><template class="gal-tpl">' . $one(['file' => '', 'alt' => '', 'caption' => '', 'pos' => '50% 50%'], array_merge($nt, [$ph]), array_merge($nt, [$ph])) . '</template>';
-    return $o . '<div class="gal-drop"><label class="btn">+ Fotoğraf ekle (birden fazla seçebilirsiniz)<input type="file" accept="image/jpeg,image/png,image/webp" multiple class="gal-up" hidden></label><span class="gal-st" aria-live="polite"></span><div class="help">Fotoğrafları buraya sürükleyip bırakabilirsiniz. Telefon fotoğrafları otomatik küçültülür.</div></div></div>';
+    return $o . '<div class="gal-drop"><div class="gal-btns"><label class="btn">+ Fotoğraf yükle (birden fazla seçebilirsiniz)<input type="file" accept="image/jpeg,image/png,image/webp" multiple class="gal-up" hidden></label>'
+        . '<button type="button" class="btn gal-pick">' . aic('image') . '<span>Galeriden ekle</span></button></div><span class="gal-st" aria-live="polite"></span><div class="help">Fotoğrafları buraya sürükleyip bırakabilirsiniz. Telefon fotoğrafları otomatik küçültülür. Galeriye daha önce eklediğiniz fotoğrafları "Galeriden ekle" ile seçin.</div></div></div>';
 }
 function render_menu(array $items, array $np, array $nt): string {
     $types = ['home' => 'Ana sayfa', 'services' => 'Hizmetler (açılır liste)', 'areas' => 'Bölgeler (açılır liste)', 'projects' => 'Projeler (proje varsa görünür)', 'faq' => 'SSS sayfası', 'about' => 'Hakkımızda', 'contact' => 'İletişim', 'link' => 'Özel bağlantı'];

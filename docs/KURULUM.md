@@ -27,7 +27,9 @@ Panel adresi: **https://demirmechanical.com/admin/**
 | Müşteri yorumları | İçerik → Yorumlar |
 | Sık sorulan sorular | İçerik → Sık Sorulan Sorular |
 | Her sayfanın yazıları ve fotoğrafları | Sayfalar → … |
-| Sitedeki bütün fotoğrafları bir arada görmek, dosya adı ve alt metnini değiştirmek | İçerik → Galeri → fotoğrafa tıklayın |
+| Sitedeki bütün fotoğrafları bir arada görmek, dosya adı ve alt metnini değiştirmek (sağdaki panelde) | İçerik → Galeri → fotoğrafa tıklayın |
+| Galeriye yeni fotoğraf eklemek, kullanılmayan fotoğrafı silmek | İçerik → Galeri → Fotoğraf ekle (veya sürükleyip bırakın) |
+| Galerideki bir fotoğrafı bir hizmette, bölgede, projede veya sayfada kullanmak | Fotoğraf alanında **Galeriden seç** (projelerde **Galeriden ekle**) |
 | **Müşteriye fatura** hazırlamak, PDF indirmek, ödenenleri takip etmek | İşletme → Faturalar → Yeni fatura |
 | HST numarası, fatura numarası ön eki, ödeme süresi ve ödeme bilgileri | İşletme → Fatura Ayarları |
 | Google başlıkları, açıklamalar, anahtar kelimeler, paylaşım görselleri, fotoğraf adları ve alt metinleri (Google önizlemesi, öneriler, SEO kontrolü) | Araçlar → SEO Paneli → Düzenle |

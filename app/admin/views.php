@@ -128,7 +128,7 @@ function out(string $title, string $active, string $main, bool $authed = true, i
         . '<form method="post">' . csrf_field() . '<input type="hidden" name="a" value="logout"><button type="submit" class="logout">' . aic('logout') . '<span>Çıkış yap</span></button></form></div></aside>'
         . '<div class="side-dim" data-side-close></div>'
         . '<div class="main"><header class="top"><button type="button" class="burger" data-side-open aria-label="Menüyü aç" aria-controls="side">' . aic('menu') . '</button><div class="top-t">' . e($title) . '</div><a class="top-site" href="../" target="_blank" rel="noopener" title="Siteyi görüntüle">' . aic('ext') . '</a></header>'
-        . '<main class="content">' . $fl . $main . '</main></div></div>'
+        . '<main class="content' . ($active === 'media' ? ' wide' : '') . '">' . $fl . $main . '</main></div></div>'
         . '<script type="application/json" id="dm-icons">' . json_encode(icons(), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
         . '<script type="application/json" id="seo-px">' . json_encode(seo_widths()) . '</script></body></html>';
     exit;
@@ -199,7 +199,7 @@ function view_dash(): string {
         ['sec&s=reviews', 'star', 'Yorumlar', count($c['reviews']) . ' yorum'],
         ['sec&s=business', 'building', 'Firma Bilgileri', e(phone())],
         ['seo', 'search', 'SEO Paneli', $seo['pages'] . ' sayfa · ' . ($seo['fix'] ? $seo['fix'] . ' iyileştirilebilir' : 'hepsi iyi')],
-        ['media', 'image', 'Galeri', count($media) . ' fotoğraf' . (($na = count(array_filter($media, fn($it) => $it['noalt']))) ? ' · ' . $na . ' alt metni eksik' : '')],
+        ['media', 'image', 'Galeri', count($media = array_filter($media, fn($it) => $it['shown'])) . ' görsel' . (($na = count(array_filter($media, fn($it) => $it['noalt']))) ? ' · ' . $na . ' alt metni eksik' : '')],
         ['invoices', 'receipt', 'Faturalar', $inv['count'] ? ($inv['open_n'] ? e(inv_money($inv['open'])) . ' ödenmemiş' : $inv['count'] . ' fatura · hepsi ödendi') : 'Fatura oluşturun'],
     ];
     $o .= '<div class="tiles">';

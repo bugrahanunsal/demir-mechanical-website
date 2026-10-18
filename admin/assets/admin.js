@@ -688,132 +688,322 @@
     if (first) { var html = dlg.innerHTML; dlg.removeAttribute('open'); show(html); }
   }
 
-  /* ---------- Galeri: every photo with its file name and alternative text ---------- */
+  /* ---------- Galeri: photo grid, details panel on the right, "Fotoğraf ekle" ---------- */
+  function postJson(fd) {
+    return fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'Accept': 'application/json', 'X-CSRF': CSRF } })
+      .then(function (r) { return r.json().catch(function () { throw new Error('Sunucu hatası (' + r.status + '). Sayfayı yenileyip tekrar deneyin.'); }); })
+      .then(function (j) { if (!j.ok) throw new Error(j.error || 'İşlem yapılamadı.'); return j; });
+  }
   var mediaApp = $('#mediaApp');
   if (mediaApp) mediaPanel(mediaApp);
   function mediaPanel(app) {
-    var grid = $('#mediaGrid'), search = $('#mediaSearch'), chips = $('#mediaChips'), dlg = $('#mediaModal');
-    var filter = app.getAttribute('data-filter') || '', cur = null, downOnBackdrop = false;
+    var grid = $('#mediaGrid'), search = $('#mediaSearch'), chips = $('#mediaChips'), pane = $('#mediaPane'), upBox = $('#mediaUp');
+    var emptyTpl = $('#mediaEmpty'), wide = window.matchMedia('(min-width: 1100px)');
+    var filter = app.getAttribute('data-filter') || '', cur = null, adding = false;
+    function tiles() { return $$('.mtile', grid); }
     function shown(c) {
       var q = search ? search.value.trim().toLowerCase() : '';
-      if ((filter === 'photo' || filter === 'og' || filter === 'logo') && c.getAttribute('data-cat') !== filter) return false;
-      if (filter === 'noalt' && c.getAttribute('data-na') !== '1') return false;
-      if (filter === 'unused' && c.getAttribute('data-un') !== '1') return false;
+      if (filter === 'unused') { if (c.getAttribute('data-un') !== '1') return false; }
+      else {
+        if (c.getAttribute('data-sh') !== '1') return false;
+        if ((filter === 'photo' || filter === 'og' || filter === 'logo') && c.getAttribute('data-cat') !== filter) return false;
+        if (filter === 'noalt' && c.getAttribute('data-na') !== '1') return false;
+      }
       return !q || (c.getAttribute('data-q') || '').indexOf(q) >= 0;
     }
     function applyFilter() {
       var any = false;
-      $$('.mcard', grid).forEach(function (c) { var on = shown(c); c.hidden = !on; if (on) any = true; });
+      tiles().forEach(function (c) { var on = shown(c); c.hidden = !on; if (on) any = true; });
       var none = $('.seo-none', grid); if (none) none.hidden = any;
       $$('a[data-f]', chips).forEach(function (a) {
         var on = a.getAttribute('data-f') === filter; a.classList.toggle('on', on);
         if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
       });
+      if (cur) navAll();
     }
     function setUrl() {
-      var u = 'index.php?p=media' + (filter ? '&f=' + filter : '') + (cur && dlg.open ? '&open=' + encodeURIComponent(cur.file) : '');
+      var u = 'index.php?p=media' + (filter ? '&f=' + filter : '') + (cur ? '&open=' + encodeURIComponent(cur.file) : '');
       try { history.replaceState(null, '', u); } catch (e) {}
     }
-    if (search) search.addEventListener('input', applyFilter);
-    chips.addEventListener('click', function (e) {
-      var a = e.target.closest('a[data-f]'); if (!a) return;
-      e.preventDefault(); filter = a.getAttribute('data-f'); applyFilter(); setUrl();
-    });
-    applyFilter();
+    function setFilter(f) { filter = f; applyFilter(); setUrl(); }
     function setDirty(on) {
       if (cur) { cur.dirty = on; cur.form.classList.toggle('dirty', on); }
       dirty = on || !!$('form.dirty[data-guard]');
     }
     function leaveOk() { return !cur || !cur.dirty || window.confirm('Bu fotoğraftaki değişiklikler kaydedilmedi. Kaydetmeden devam edilsin mi?'); }
+    function select(file) {
+      tiles().forEach(function (t) {
+        var on = !!file && t.getAttribute('data-media-open') === file; t.classList.toggle('on', on);
+        if (on) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current');
+      });
+    }
     function nav(f, dir, file) {
       var el = $('[data-media-nav="' + dir + '"]', f); if (!el) return;
       var n;
       if (file) {
         n = document.createElement('a'); n.className = 'ib'; n.href = 'index.php?p=media&open=' + encodeURIComponent(file);
-        n.setAttribute('data-media-open', file); n.title = dir === 'prev' ? 'Önceki fotoğraf' : 'Sonraki fotoğraf'; n.setAttribute('aria-label', n.title);
+        n.setAttribute('data-media-open', file); n.title = dir === 'prev' ? 'Önceki fotoğraf (←)' : 'Sonraki fotoğraf (→)'; n.setAttribute('aria-label', n.title);
       } else { n = document.createElement('span'); n.className = 'ib off'; }
       n.setAttribute('data-media-nav', dir); n.textContent = dir === 'prev' ? '‹' : '›';
       el.replaceWith(n);
     }
-    function show(html) {
-      dlg.innerHTML = html;
-      var f = $('form.media-ed', dlg);
-      if (!f) { cur = null; return; }
-      cur = { form: f, file: f.getAttribute('data-file'), dirty: false };
-      var list = $$('.mcard', grid).filter(function (c) { return !c.hidden; }).map(function (c) { return c.getAttribute('data-media-open'); });
+    function navAll() {
+      var list = tiles().filter(function (c) { return !c.hidden; }).map(function (c) { return c.getAttribute('data-media-open'); });
       var i = list.indexOf(cur.file);
-      nav(f, 'prev', i > 0 ? list[i - 1] : ''); nav(f, 'next', i >= 0 && i < list.length - 1 ? list[i + 1] : '');
-      if (!dlg.open) { try { dlg.showModal(); } catch (e) { dlg.setAttribute('open', ''); } }
-      var tt = $('.sd-ttl', f); if (tt) try { tt.focus({ preventScroll: true }); } catch (e) {}
-      document.body.classList.add('modal-open');
+      nav(cur.form, 'prev', i > 0 ? list[i - 1] : ''); nav(cur.form, 'next', i >= 0 && i < list.length - 1 ? list[i + 1] : '');
+    }
+    function openPane(on) {
+      pane.classList.toggle('open', on);
+      document.body.classList.toggle('pane-open', on && !wide.matches);
+    }
+    function showEmpty() {
+      cur = null; setDirty(false); select('');
+      pane.innerHTML = emptyTpl ? emptyTpl.innerHTML : '';
+      openPane(false); setUrl();
+    }
+    function show(html, focusAlt) {
+      pane.innerHTML = html;
+      var f = $('form.media-ed', pane);
+      if (!f) { showEmpty(); return; }
+      cur = { form: f, file: f.getAttribute('data-file'), dirty: false };
+      navAll(); select(cur.file); openPane(true);
+      var b = $('.sd-body', pane); if (b) b.scrollTop = 0;
+      var a = focusAlt && $('#mdAlt', f), tt = $('.sd-ttl', f);
+      try { if (a) a.focus(); else if (tt) tt.focus({ preventScroll: true }); } catch (e) {}
+      var t = $('.mtile.on', grid);
+      if (t && wide.matches && t.scrollIntoView) { var r = t.getBoundingClientRect(); if (r.top < 0 || r.bottom > window.innerHeight) t.scrollIntoView({ block: 'nearest' }); }
       setDirty(false); setUrl();
     }
-    function open(file) {
-      if (cur && cur.file === file && dlg.open) return;
+    function open(file, focusAlt) {
+      if (cur && cur.file === file) { openPane(true); return; }
       if (!leaveOk()) return;
-      dlg.classList.add('loading');
+      pane.classList.add('loading');
       fetch('index.php?p=media_edit&file=' + encodeURIComponent(file), { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
         .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
         .then(function (r) {
           if (r.text.indexOf('media-ed"') < 0) throw new Error(r.status === 404 ? 'Bu fotoğraf bulunamadı. Sayfayı yenileyin.' : 'Fotoğraf açılamadı. Oturum kapanmış olabilir; sayfayı yenileyin.');
-          show(r.text);
-          var b = $('.sd-body', dlg); if (b) b.scrollTop = 0;
+          show(r.text, focusAlt);
         })
         .catch(function (err) { window.alert(err.message); })
-        .then(function () { dlg.classList.remove('loading'); });
+        .then(function () { pane.classList.remove('loading'); });
     }
-    function close() {
-      if (!leaveOk()) return;
-      cur = null; setDirty(false);
-      if (dlg.open) dlg.close();
-      dlg.removeAttribute('open'); dlg.innerHTML = '';
-      document.body.classList.remove('modal-open');
-      setUrl();
+    function close() { if (leaveOk()) showEmpty(); }
+    function apply(j, focusAlt) {               // the server's answer after a change: new grid, chips and panel
+      if (j.grid) grid.innerHTML = j.grid;
+      if (j.chips) chips.innerHTML = j.chips;
+      if (j.empty && emptyTpl) emptyTpl.innerHTML = j.empty;
+      cur = null;
+      applyFilter();
+      if (j.html && j.html.indexOf('media-ed"') >= 0) show(j.html, focusAlt); else showEmpty();
+    }
+    function errBox(f, msg) { var er = $('[data-media-err]', f); if (er) { er.textContent = msg; er.hidden = false; } else window.alert(msg); }
+    function busy(f, btn, on, label) {
+      var sp = btn && btn.querySelector('span');
+      f.classList.toggle('busy', on);
+      if (btn) { btn.disabled = on; if (sp) { if (on) { btn._t = sp.textContent; sp.textContent = label; } else if (btn._t) sp.textContent = btn._t; } }
     }
     function save(f, btn) {
       if (f.classList.contains('busy')) return;
       var fd = new FormData(f); fd.set('a', 'media_save');
-      btn = btn || $('button[value=media_save]', f);
-      var sp = btn && btn.querySelector('span'), old = sp ? sp.textContent : '';
-      f.classList.add('busy'); if (btn) btn.disabled = true; if (sp) sp.textContent = 'Kaydediliyor…';
-      fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'Accept': 'application/json', 'X-CSRF': CSRF } })
-        .then(function (r) { return r.json().catch(function () { throw new Error('Sunucu hatası (' + r.status + '). Sayfayı yenileyip tekrar deneyin.'); }); })
-        .then(function (j) {
-          if (!j.ok) throw new Error(j.error || 'Kaydedilemedi.');
-          setDirty(false);
-          if (j.grid) grid.innerHTML = j.grid;
-          if (j.chips) chips.innerHTML = j.chips;
-          applyFilter();
-          if (j.html) show(j.html);
-          toast(j.note || 'Kaydedildi.');
-        })
-        .catch(function (err) { var er = $('[data-media-err]', f); if (er) { er.textContent = err.message; er.hidden = false; } else window.alert(err.message); })
-        .then(function () { f.classList.remove('busy'); if (btn) btn.disabled = false; if (sp) sp.textContent = old; });
+      btn = btn && btn.value === 'media_save' ? btn : $('button[value=media_save]', f);
+      busy(f, btn, true, 'Kaydediliyor…');
+      postJson(fd)
+        .then(function (j) { setDirty(false); apply(j); toast(j.note || 'Kaydedildi.'); })
+        .catch(function (err) { busy(f, btn, false); errBox(f, err.message); });
     }
+    function del(f, btn) {
+      if (f.classList.contains('busy') || !window.confirm(btn.getAttribute('data-del-msg') || 'Bu fotoğraf silinsin mi?')) return;
+      var fd = new FormData(); fd.set('a', 'media_delete'); fd.set('_csrf', CSRF); fd.set('file', f.getAttribute('data-file'));
+      busy(f, btn, true, 'Siliniyor…');
+      postJson(fd)
+        .then(function (j) { setDirty(false); cur = null; apply(j); toast(j.note || 'Silindi.'); })
+        .catch(function (err) { busy(f, btn, false); errBox(f, err.message); });
+    }
+    /* adding photos: several at once, by the button or by dropping them on the page */
+    function addFiles(files) {
+      files = files.filter(function (f) { return /^image\/(jpeg|png|webp)$/.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name || ''); });
+      if (!files.length) { toast('JPG, PNG veya WebP fotoğraf seçin.'); return; }
+      if (adding) { toast('Önceki yükleme bitmeden yeni fotoğraf eklenemez.'); return; }
+      if (!leaveOk()) return;
+      adding = true; app.classList.add('adding');
+      var done = [], errs = [], i = 0;
+      function line(p) {
+        upBox.hidden = false;
+        upBox.innerHTML = '<span class="mup-sp"></span><b></b><span class="mup-bar"><i></i></span>';
+        upBox.querySelector('b').textContent = i + ' / ' + files.length + ' yükleniyor… ' + (p ? '%' + p : '');
+        upBox.querySelector('i').style.width = Math.round(((i - 1) + (p || 0) / 100) / files.length * 100) + '%';
+      }
+      function finish() {
+        if (!done.length) {
+          adding = false; app.classList.remove('adding'); upBox.hidden = true;
+          if (errs.length) window.alert('Yüklenemedi:\n' + errs.join('\n'));
+          return;
+        }
+        upBox.querySelector('b').textContent = 'Galeriye ekleniyor…';
+        var fd = new FormData(); fd.set('a', 'media_add'); fd.set('_csrf', CSRF);
+        done.forEach(function (f) { fd.append('files[]', f); });
+        postJson(fd)
+          .then(function (j) {
+            if (search) search.value = '';
+            filter = ''; cur = null; apply(j, true);
+            toast(j.note || 'Eklendi.');
+            if (errs.length) window.alert('Bazı dosyalar yüklenemedi:\n' + errs.join('\n'));
+          })
+          .catch(function (err) { window.alert(err.message); })
+          .then(function () { adding = false; app.classList.remove('adding'); upBox.hidden = true; upBox.innerHTML = ''; });
+      }
+      (function next() {
+        if (i >= files.length) { finish(); return; }
+        var file = files[i++], name = (file.name || 'photo').replace(/\.[^.]+$/, '');
+        line(0);
+        shrink(file, 'photo')
+          .then(function (fl) { return upload(fl, 'photo', name, function (p) { line(p); }); })
+          .then(function (j) { done.push(j.file); }, function (err) { errs.push((file.name || 'Fotoğraf') + ': ' + err.message); })
+          .then(next);
+      })();
+    }
+    // drag and drop anywhere on the page
+    var depth = 0;
+    function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+    document.addEventListener('dragenter', function (e) { if (hasFiles(e)) { depth++; app.classList.add('dropping'); } });
+    document.addEventListener('dragleave', function (e) { if (hasFiles(e) && --depth <= 0) { depth = 0; app.classList.remove('dropping'); } });
+    document.addEventListener('dragover', function (e) { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+    document.addEventListener('drop', function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault(); depth = 0; app.classList.remove('dropping');
+      addFiles(Array.prototype.slice.call(e.dataTransfer.files || []));
+    });
+    app.addEventListener('change', function (e) {
+      if (!e.target.matches('[data-media-add]')) return;
+      var list = Array.prototype.slice.call(e.target.files || []); e.target.value = '';
+      addFiles(list);
+    });
+    /* events */
+    if (search) search.addEventListener('input', applyFilter);
+    chips.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-f]'); if (!a) return;
+      e.preventDefault(); setFilter(a.getAttribute('data-f'));
+    });
     app.addEventListener('click', function (e) {
+      var go = e.target.closest('[data-f-go]'); if (go) { e.preventDefault(); setFilter(go.getAttribute('data-f-go')); return; }
       var op = e.target.closest('[data-media-open]'); if (op) { e.preventDefault(); open(op.getAttribute('data-media-open')); return; }
       if (e.target.closest('[data-media-close]')) { e.preventDefault(); close(); }
     });
-    dlg.addEventListener('input', function (e) {
+    pane.addEventListener('input', function (e) {
       if (!cur || !cur.form.contains(e.target) || !e.target.name) return;
       setDirty(true); var er = $('[data-media-err]', cur.form); if (er) er.hidden = true;
     });
-    dlg.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('input[type=text]')) { e.preventDefault(); if (cur && $('button[value=media_save]', cur.form)) save(cur.form); } });
-    dlg.addEventListener('cancel', function (e) { e.preventDefault(); close(); });
-    dlg.addEventListener('close', function () {
-      if (!cur) return;
-      cur = null; setDirty(false); dlg.innerHTML = ''; document.body.classList.remove('modal-open'); setUrl();
+    pane.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && e.target.matches('input[type=text], #mdAlt')) { e.preventDefault(); if (cur && $('button[value=media_save]', cur.form)) save(cur.form); }
     });
-    dlg.addEventListener('mousedown', function (e) { downOnBackdrop = e.target === dlg; });
-    dlg.addEventListener('click', function (e) { if (e.target === dlg && downOnBackdrop) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (!cur || e.altKey || e.ctrlKey || e.metaKey || $('dialog[open]')) return;
+      var t = e.target, typing = t.matches && t.matches('input, textarea, select, [contenteditable]');
+      if (e.key === 'Escape') { if (typing && t.blur) t.blur(); close(); return; }
+      if (typing || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      var n = $('[data-media-nav="' + (e.key === 'ArrowLeft' ? 'prev' : 'next') + '"][data-media-open]', cur.form);
+      if (n) { e.preventDefault(); open(n.getAttribute('data-media-open')); }
+    });
+    wide.addEventListener && wide.addEventListener('change', function () { openPane(!!cur); });
     document.addEventListener('submit', function (e) {
       var f = e.target;
       if (!f.matches || !f.matches('form.media-ed') || !window.fetch) return;
-      e.preventDefault(); e.stopImmediatePropagation(); save(f, e.submitter);
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (e.submitter && e.submitter.value === 'media_delete') del(f, e.submitter); else save(f, e.submitter);
     }, true);
-    var first = $('form.media-ed', dlg);
-    if (first) { var html = dlg.innerHTML; dlg.removeAttribute('open'); show(html); }
+    applyFilter();
+    if ($('form.media-ed', pane)) show(pane.innerHTML); else openPane(false);
   }
+
+  /* ---------- "Galeriden seç" / "Galeriden ekle": use photos of the gallery in the editors ---------- */
+  var pick = { dlg: null, items: null, multi: false, sel: [], done: null };
+  function pickLoad() {
+    if (pick.items) return Promise.resolve(pick.items);
+    return fetch('index.php?p=media_pick', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.ok) throw new Error(); pick.items = j.items || []; return pick.items; });
+  }
+  function pickRender() {
+    var g = $('[data-pk-grid]', pick.dlg), q = $('[data-pk-q]', pick.dlg).value.trim().toLowerCase(), n = 0;
+    g.innerHTML = '';
+    (pick.items || []).forEach(function (m) {
+      if (q && (m.name + ' ' + m.alt).toLowerCase().indexOf(q) < 0) return;
+      n++;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'pk-i' + (pick.sel.indexOf(m) >= 0 ? ' on' : '');
+      b._m = m; b.title = m.name + (m.alt ? ' — ' + m.alt : '') + ' · ' + m.w + '×' + m.h;
+      var im = new Image(); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = m.sm || m.url; b.appendChild(im);
+      var c = document.createElement('span'); c.className = 'pk-c'; c.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'; b.appendChild(c);
+      if (m.new) { var nw = document.createElement('span'); nw.className = 'pk-new'; nw.textContent = 'Kullanılmıyor'; b.appendChild(nw); }
+      g.appendChild(b);
+    });
+    if (!n) g.innerHTML = '<p class="muted small pk-none">' + ((pick.items || []).length ? 'Aramaya uyan fotoğraf yok.' : 'Galeride fotoğraf yok. Galeri sayfasındaki "Fotoğraf ekle" ile yükleyin.') + '</p>';
+    pickInfo();
+  }
+  function pickInfo() {
+    var info = $('[data-pk-n]', pick.dlg), ok = $('[data-pk-ok]', pick.dlg), s = pick.sel;
+    ok.disabled = !s.length;
+    ok.querySelector('span').textContent = pick.multi ? (s.length ? s.length + ' fotoğraf ekle' : 'Ekle') : 'Seç';
+    info.textContent = s.length === 1 ? s[0].name + (s[0].alt ? ' — ' + s[0].alt : ' (alternatif metni yok)') : s.length ? s.length + ' fotoğraf seçildi' : (pick.multi ? 'Eklemek istediğiniz fotoğraflara tıklayın.' : 'Bir fotoğrafa tıklayın.');
+  }
+  function pickClose() { if (pick.dlg && pick.dlg.open) pick.dlg.close(); }
+  function pickOpen(multi, done) {
+    if (!pick.dlg) {
+      var d = pick.dlg = document.createElement('dialog');
+      d.className = 'seo-dlg pick-dlg'; d.setAttribute('aria-label', 'Galeriden fotoğraf seçin');
+      d.innerHTML = '<div class="pk"><div class="sd-head"><div class="sd-ttl"><b data-pk-t></b><small>Galerideki fotoğraflar · en yeniler önce</small></div>'
+        + '<div class="sd-nav"><button type="button" class="ib" data-pk-close aria-label="Kapat" title="Kapat">×</button></div></div>'
+        + '<div class="pk-bar"><label class="seo-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>'
+        + '<input type="search" data-pk-q placeholder="Dosya adı veya alt metin ara…" autocomplete="off"></label><a class="btn sm ghost" href="index.php?p=media" target="_blank" rel="noopener">Galeriyi aç</a></div>'
+        + '<div class="pk-scroll"><div class="pk-grid" data-pk-grid></div></div>'
+        + '<div class="sd-foot"><span class="pk-n" data-pk-n></span><div class="sd-fa"><button type="button" class="btn" data-pk-close>Vazgeç</button><button type="button" class="btn primary" data-pk-ok><span>Seç</span></button></div></div></div>';
+      document.body.appendChild(d);
+      d.addEventListener('click', function (e) {
+        if (e.target === d || e.target.closest('[data-pk-close]')) { pickClose(); return; }
+        if (e.target.closest('[data-pk-ok]')) { var s = pick.sel.slice(); pickClose(); if (s.length && pick.done) pick.done(s); return; }
+        var b = e.target.closest('.pk-i'); if (!b) return;
+        var m = b._m, k = pick.sel.indexOf(m);
+        if (pick.multi) { if (k >= 0) pick.sel.splice(k, 1); else pick.sel.push(m); b.classList.toggle('on', k < 0); }
+        else { pick.sel = [m]; $$('.pk-i.on', d).forEach(function (x) { x.classList.remove('on'); }); b.classList.add('on'); }
+        pickInfo();
+      });
+      d.addEventListener('dblclick', function (e) { var b = e.target.closest('.pk-i'); if (b && !pick.multi) { pickClose(); if (pick.done) pick.done([b._m]); } });
+      d.addEventListener('input', function (e) { if (e.target.matches('[data-pk-q]')) pickRender(); });
+      d.addEventListener('close', function () { document.body.classList.remove('modal-open'); });
+    }
+    pick.multi = multi; pick.sel = []; pick.done = done;
+    $('[data-pk-t]', pick.dlg).textContent = multi ? 'Galeriden fotoğraf ekleyin' : 'Galeriden fotoğraf seçin';
+    $('[data-pk-q]', pick.dlg).value = '';
+    $('[data-pk-grid]', pick.dlg).innerHTML = '<p class="muted small pk-none">Fotoğraflar yükleniyor…</p>';
+    pickInfo();
+    try { pick.dlg.showModal(); } catch (e) { pick.dlg.setAttribute('open', ''); }
+    document.body.classList.add('modal-open');
+    pickLoad().then(pickRender, function () { $('[data-pk-grid]', pick.dlg).innerHTML = '<p class="muted small pk-none">Fotoğraflar yüklenemedi. Sayfayı yenileyip tekrar deneyin.</p>'; });
+  }
+  function pickInto(box, m) {
+    applyUpload(box, { file: m.file, url: m.url, name: m.name, w: m.w, h: m.h });
+    var alt = box.querySelector('.imgf-alt'); if (alt && m.alt) alt.value = m.alt;
+    var st = box.querySelector('.imgf-st'); if (st) st.textContent = 'Galeriden seçildi ✓ Kaydetmeyi unutmayın';
+    markDirty(box.closest('form'));
+  }
+  function pickIntoGallery(gal, list) {
+    var items = gal.querySelector('.gal-items'), tpl = kid(gal, 'gal-tpl'), st = gal.querySelector('.gal-st'), form = gal.closest('form');
+    var title = ((form.querySelector('[name="f[title]"]') || {}).value || '').trim();
+    list.forEach(function (m) {
+      var node = tpl.content.firstElementChild.cloneNode(true);
+      items.appendChild(node); renumber(form);
+      applyUpload(node.querySelector('.imgf'), { file: m.file, url: m.url, name: m.name, w: m.w, h: m.h });
+      var alt = node.querySelector('.imgf-alt'); if (alt) alt.value = m.alt || (title ? title + (count(items) > 1 ? ' – photo ' + count(items) : '') : '');
+    });
+    if (st) st.textContent = list.length + ' fotoğraf eklendi ✓ Kaydetmeyi unutmayın.';
+    markDirty(form);
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.imgf-pick, .gal-pick');
+    if (!b) return;
+    e.preventDefault();
+    if (b.classList.contains('gal-pick')) { var gal = b.closest('.gal'); pickOpen(true, function (list) { pickIntoGallery(gal, list); }); }
+    else { var box = b.closest('.imgf'); pickOpen(false, function (list) { pickInto(box, list[0]); }); }
+  });
 
   /* ---------- Faturalar: list search + filters ---------- */
   var invApp = $('#invApp');

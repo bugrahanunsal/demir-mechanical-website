@@ -29,8 +29,10 @@ the admin panel UI is Turkish.
   is the single Arial table, passed to admin.js as `#seo-px` JSON (PHP and JS must agree; the e2e test checks it).
   Per-page `seo_keyphrase` / `og_image` exist on fixed pages (defaults) and items (may be missing on old items: always `?? ''`).
   Photo renames copy into `assets/uploads/…` (never write into `assets/photos`, which comes from git).
-- Galeri (`app/admin/media.php`) reads every image from the content + photo folders each time (nothing stored); alt text edits are
-  written to every use. Reuse `image_rename()` + `replace_file_refs()` for renames.
+- Galeri (`app/admin/media.php`) reads every image from the content + photo folders each time; only photos added in the gallery
+  are stored, in `content.library` ({file, alt, added}; not a "use": `media_refs()` skips it). Alt text edits are written to every
+  use (+ the library entry). Reuse `image_rename()` + `replace_file_refs()` for renames. Never call `content_save()` inside
+  `with_lock()` (flock is not re-entrant: it would wait for itself).
 - Invoices (`app/admin/invoices.php`) live in `data/invoices.json` (customer data: never in git, never in content.json, never on a
   public page). Change them only through `inv_update()` (lock + backup). Totals: `inv_totals()` in PHP and `calc()` in admin.js must
   round the same way. The PDF writer (`app/admin/pdf.php`, `DmPdf`) only has Helvetica/WinAnsi: Turkish ş/ğ/ı lose their marks.

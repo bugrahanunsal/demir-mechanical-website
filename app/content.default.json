@@ -1650,6 +1650,7 @@
   "theme_js": "",
   "theme_js_base": ""
  },
+ "library": [],
  "invoice": {
   "prefix": "DM-",
   "start": 1001,

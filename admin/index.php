@@ -48,7 +48,7 @@ try {
         csrf_require();
         $acts = ['logout' => 'act_logout', 'logout_all' => 'act_logout_all', 'password' => 'act_password', 'hook_key' => 'act_hook_key',
                  'save_sec' => 'act_save_sec', 'save_item' => 'act_save_item', 'delete' => 'act_delete', 'move' => 'act_move', 'preview' => 'act_preview',
-                 'upload' => 'act_upload', 'seo_save' => 'act_seo_save', 'seo_check' => 'act_seo_check', 'seo_suggest' => 'act_seo_suggest', 'media_save' => 'act_media_save',
+                 'upload' => 'act_upload', 'seo_save' => 'act_seo_save', 'seo_check' => 'act_seo_check', 'seo_suggest' => 'act_seo_suggest', 'media_save' => 'act_media_save', 'media_add' => 'act_media_add', 'media_delete' => 'act_media_delete',
                  'invoice_save' => 'act_invoice_save', 'invoice_pdf' => 'act_invoice_pdf', 'invoice_copy' => 'act_invoice_copy', 'invoice_delete' => 'act_invoice_delete',
                  'restore' => 'act_restore', 'import' => 'act_import', 'rebuild' => 'act_rebuild', 'cleanup' => 'act_cleanup'];
         if (!isset($acts[$a])) redirect([], 'Bilinmeyen işlem.', 'bad');
@@ -78,6 +78,7 @@ try {
         case 'seo_media': seo_media((string)($_GET['path'] ?? ''));
         case 'media': out('Galeri', 'media', view_media((string)($_GET['f'] ?? ''), (string)($_GET['open'] ?? '')));
         case 'media_edit': media_edit_fragment((string)($_GET['file'] ?? ''));
+        case 'media_pick': media_pick();
         case 'invoices': out('Faturalar', 'invoices', view_invoices((string)($_GET['f'] ?? '')));
         case 'invoice': invoice_page((string)($_GET['id'] ?? 'new'));
         case 'invoice_pdf': invoice_pdf_get((string)($_GET['id'] ?? ''), !empty($_GET['dl']));

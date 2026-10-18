@@ -841,49 +841,127 @@ def t_theme(pn, P):
     c = content()['custom']; a = rd('about.html')
     check(c['theme_css'] == '' and c['theme_js'] == '' and c['theme_css_base'] == '' and 'rgb(1, 2, 3)' not in a and 'dmThemeJs' not in a and a.count(css0[:300]) == 1, 'back to the original: nothing stored, pages use the shipped code again')
 
+def media_toast(p, timeout=20000):
+    p.wait_for_selector('.toast', timeout=timeout)
+    txt = p.locator('.toast').last.inner_text()
+    p.evaluate("document.querySelectorAll('.toast').forEach(t => t.remove())")
+    return txt
+
 def t_media(pn, P):
-    # Galeri: every photo with its file name and alternative text, editable in a window
+    # Galeri: a grid of photos; a click shows file name + alt text in the panel on the right; add / delete photos;
+    # photos of the gallery are used in the editors with "Galeriden seç" / "Galeriden ekle"
     p = pn.p
     pn.go('media')
-    cards = p.locator('.mcard')
-    n = cards.count()
-    check(p.locator('h1').inner_text() == 'Galeri' and n >= 20, f'Galeri lists the photos of the whole site ({n})')
+    n = p.locator('.mtile:not([hidden])').count()
+    check(p.locator('h1').inner_text() == 'Galeri' and n >= 20 and p.locator('#mediaPane .mp-empty').is_visible(), f'Galeri: photo grid ({n}) with an empty details panel')
     c = content()
     svc = c['services'][0]
-    card = p.locator(f'.mcard[data-media-open="{svc["image"]["file"]}"]')
-    check(card.count() == 1 and svc['image']['alt'] in card.inner_text() and os.path.basename(svc['image']['file']) in card.inner_text(), 'card shows the file name and the alternative text')
+    tile = p.locator(f'.mtile[data-media-open="{svc["image"]["file"]}"]')
+    check(tile.count() == 1 and tile.locator('img').count() == 1 and tile.locator('.mt-name').inner_text() == os.path.basename(svc['image']['file']), 'each photo is a picture tile (name on hover)')
     p.fill('#mediaSearch', os.path.basename(svc['image']['file'])[:12])
-    vis = p.locator('.mcard:not([hidden])').count()
+    vis = p.locator('.mtile:not([hidden])').count()
     check(0 < vis < n, f'search filters the photos ({vis})')
     p.fill('#mediaSearch', '')
-    card.click()
-    p.wait_for_selector('#mediaModal form.media-ed')
-    f = p.locator('#mediaModal form.media-ed')
-    check(f.locator('#mdAlt').input_value() == svc['image']['alt'] and f.locator('#mdName').input_value() == os.path.splitext(os.path.basename(svc['image']['file']))[0], 'window shows the editable file name and alt text')
-    check(('open=' + urllib.parse.quote(svc['image']['file'], safe='')) in p.url or 'open=' in p.url, 'address remembers the open photo')
-    check('Hizmet: ' + svc['name'] in f.locator('.musage').inner_text(), 'window lists where the photo is used')
+    tile.click()
+    p.wait_for_selector('#mediaPane form.media-ed')
+    f = p.locator('#mediaPane form.media-ed')
+    pb = p.locator('#mediaPane').bounding_box(); gb = p.locator('#mediaGrid').bounding_box()
+    check(pb['x'] >= gb['x'] + gb['width'] and f.locator('#mdAlt').input_value() == svc['image']['alt'] and f.locator('#mdName').input_value() == os.path.splitext(os.path.basename(svc['image']['file']))[0],
+          'click: file name and alt text open in the panel on the right')
+    check('on' in tile.get_attribute('class').split() and 'open=' in p.url, 'the photo is marked as selected, the address remembers it')
+    check('Hizmet: ' + svc['name'] in f.locator('.musage').inner_text(), 'panel lists where the photo is used')
     f.locator('#mdAlt').fill('Plumber clearing a kitchen drain in a Toronto home')
     f.locator('#mdName').fill('Kitchen Drain Toronto')
     f.locator('button[value=media_save]').click()
-    p.wait_for_selector('.toast', timeout=15000)
-    p.evaluate("document.querySelectorAll('.toast').forEach(t => t.remove())")
+    media_toast(p)
     c = content(); img = c['services'][0]['image']
     check(img['alt'] == 'Plumber clearing a kitchen drain in a Toronto home', 'alt text saved into the content')
     check(img['file'].startswith('assets/uploads/') and os.path.basename(img['file']).startswith('kitchen-drain-toronto') and exists(img['file']), f'file renamed as a new copy ({img["file"]})')
     check(exists(svc['image']['file']), 'old file kept (old backups still use it)')
     page = rd(svc['slug'] + '.html')
     check(os.path.basename(img['file']) in page and 'alt="Plumber clearing a kitchen drain in a Toronto home"' in page, 'the service page shows the new name and alt text')
-    check(f.locator('#mdName').input_value().startswith('kitchen-drain-toronto'), 'window shows the new name after saving')
+    check(f.locator('#mdName').input_value().startswith('kitchen-drain-toronto') and 'on' in p.locator(f'.mtile[data-media-open="{img["file"]}"]').get_attribute('class').split(), 'panel and grid show the renamed photo')
     f.locator('#mdAlt').fill('')
     f.locator('button[value=media_save]').click()
-    p.wait_for_selector('#mediaModal [data-media-err]:not([hidden])')
+    p.wait_for_selector('#mediaPane [data-media-err]:not([hidden])')
     check('boş bırakılamaz' in f.locator('[data-media-err]').inner_text() and content()['services'][0]['image']['alt'] != '', 'empty alt text refused for a service photo')
-    p.once('dialog', lambda d: d.accept())                 # "not saved, close anyway?"
+    p.once('dialog', lambda d: d.accept())                 # "not saved, continue anyway?"
+    p.locator('#mediaPane [data-media-nav=next]').click()
+    check(wait_until(p, lambda: p.locator('#mediaPane form.media-ed').count() == 1 and p.locator('#mediaPane form.media-ed').get_attribute('data-file') != img['file']), 'arrow in the panel opens the next photo')
     p.keyboard.press('Escape')
-    wait_until(p, lambda: not p.evaluate("document.querySelector('#mediaModal').open"))
+    check(wait_until(p, lambda: p.locator('#mediaPane .mp-empty').count() == 1) and p.locator('.mtile.on').count() == 0, 'Esc closes the panel')
     p.click('#mediaChips a[data-f=logo]')
-    cats = set(x.get_attribute('data-cat') for x in p.locator('.mcard:not([hidden])').all())
+    cats = set(x.get_attribute('data-cat') for x in p.locator('.mtile:not([hidden])').all())
     check(cats == {'logo'}, 'filter: logos only')
+    p.click('#mediaChips a[data-f=""]')
+    # "Fotoğraf ekle": several photos at once
+    before = n
+    p.set_input_files('[data-media-add]', [P['g2'], P['g3']])
+    note = media_toast(p, 40000)
+    lib = content().get('library', [])
+    check('2 fotoğraf galeriye eklendi' in note and len(lib) == 2 and all(x['file'].startswith('assets/uploads/photos/site-photo-') and exists(x['file']) and exists(x['file'].replace('.webp', '-sm.webp')) for x in lib),
+          'Fotoğraf ekle: two photos uploaded into the gallery (with phone copies)')
+    first, second = lib[0]['file'], lib[1]['file']
+    check(p.locator('.mtile:not([hidden])').count() == before + 2 and p.locator('#mediaPane form.media-ed').get_attribute('data-file') == first and p.evaluate('document.activeElement.id') == 'mdAlt',
+          'new photos at the top of the grid, the first one open and ready for its alt text')
+    marks = p.locator(f'.mtile[data-media-open="{first}"] .mk').all_inner_texts()
+    check('Alt yok' in marks and 'Kullanılmıyor' in marks and 'henüz sitede kullanılmıyor' in p.locator('#mediaPane').inner_text().lower(), 'new photos marked: no alt text yet, not used yet')
+    p.fill('#mdAlt', 'Copper water lines in a new basement bathroom')
+    p.click('#mediaPane button[value=media_save]')
+    media_toast(p)
+    check(content()['library'][0]['alt'] == 'Copper water lines in a new basement bathroom' and 'Alt yok' not in p.locator(f'.mtile[data-media-open="{first}"]').inner_text(), 'alt text of a gallery photo saved')
+    # photos of the gallery survive "Kullanılmayan fotoğrafları temizle"
+    pn.go('sec&s=founder')
+    upload_and_wait(p, '.imgf', P['g4'])
+    orphan = p.locator('.imgf .imgf-file').first.input_value()
+    pn.go('backups')
+    p.once('dialog', lambda d: d.accept())
+    with p.expect_navigation(): p.click('button:has-text("Temizle")')
+    check(not exists(orphan) and exists(first) and exists(second), 'cleaning up unused photos keeps the gallery photos')
+    # "Galeriden seç" in an editor
+    city = content()['cities'][0]
+    pn.go('item&k=cities&i=0')
+    p.click('.imgf-pick')
+    p.wait_for_selector('.pick-dlg .pk-i')
+    top = p.locator('.pick-dlg .pk-i').first.get_attribute('title').split(' ')[0]
+    check(p.locator('.pick-dlg .pk-i').count() >= 20 and top in (os.path.basename(first), os.path.basename(second)), f'Galeriden seç: the gallery opens, newest photos first ({top})')
+    p.fill('.pick-dlg [data-pk-q]', 'basement bathroom')
+    check(p.locator('.pick-dlg .pk-i').count() == 1, 'search in the picker')
+    p.locator('.pick-dlg .pk-i').first.click()
+    p.click('.pick-dlg [data-pk-ok]')
+    check(p.locator('.imgf-file').first.input_value() == first and p.locator('.imgf-alt').first.input_value() == 'Copper water lines in a new basement bathroom', 'picked photo and its alt text filled in')
+    pn.save('save_item')
+    c = content()
+    check(c['cities'][0]['image']['file'] == first and first.split('/')[-1] in rd(city['slug'] + '.html'), 'the city page uses the gallery photo')
+    # "Galeriden ekle" in a project gallery
+    pn.go('item&k=projects&i=new')
+    pn.field('title').fill('Basement Bathroom Rough-In — Vaughan')
+    pn.field('summary').fill('New supply and drain lines for a basement bathroom.')
+    p.click('.gal-pick')
+    p.wait_for_selector('.pick-dlg .pk-i')
+    p.locator(f'.pick-dlg .pk-i[title^="{os.path.basename(second)}"]').click()
+    p.locator('.pick-dlg .pk-i').nth(5).click()
+    check('2 fotoğraf ekle' in p.locator('.pick-dlg [data-pk-ok]').inner_text(), 'several photos can be picked at once')
+    p.click('.pick-dlg [data-pk-ok]')
+    check(p.locator('.gal-item').count() == 2, 'Galeriden ekle: two photos added to the project gallery')
+    pn.save('save_item')
+    proj = [x for x in content()['projects'] if x['title'].startswith('Basement Bathroom Rough-In')]
+    check(proj and len(proj[0]['photos']) == 2 and proj[0]['photos'][0]['file'] == second, 'project saved with the gallery photos')
+    # delete: only photos that nothing uses
+    pn.go('media')
+    p.locator(f'.mtile[data-media-open="{first}"]').click()
+    p.wait_for_selector(f'#mediaPane form.media-ed[data-file="{first}"]')
+    check(p.locator('#mediaPane button[value=media_delete]').count() == 0 and 'Bölge: ' in p.locator('#mediaPane .musage').inner_text(), 'a photo in use cannot be deleted (and shows where it is used)')
+    p.set_input_files('[data-media-add]', [P['g0']])
+    media_toast(p, 40000)
+    third = content()['library'][-1]['file']
+    check(p.locator('#mediaPane form.media-ed').get_attribute('data-file') == third, 'third photo added')
+    msgs = []
+    p.once('dialog', lambda d: (msgs.append(d.message), d.accept()))
+    p.click('#mediaPane button[value=media_delete]')
+    note = media_toast(p)
+    check('silindi' in note and not exists(third) and not exists(third.replace('.webp', '-sm.webp')) and third not in [x['file'] for x in content()['library']], 'unused photo deleted (file, phone copy and gallery entry)')
+    check(msgs and 'kalıcı olarak silinsin mi' in msgs[0] and p.locator(f'.mtile[data-media-open="{third}"]').count() == 0 and p.locator('#mediaPane .mp-empty').count() == 1, 'asked first; gone from the grid')
 
 def inv_pdf_text(data, name):
     path = os.path.join(TMP, name)
@@ -1093,6 +1171,14 @@ def t_mobile(pn, P, browser):
     save = m.locator('#seoModal button[value=seo_save]').bounding_box()
     check(box and box['width'] >= 389 and box['height'] >= 843 and inner <= 390, f'phone: SEO window fills the screen without sideways scrolling ({inner}px)')
     check(save and save['y'] + save['height'] <= 844 and save['width'] > 80, 'phone: Save button visible at the bottom of the SEO window')
+    m.goto(ADMIN + 'index.php?p=media'); m.wait_for_load_state()
+    check(m.evaluate("getComputedStyle(document.querySelector('#mediaGrid')).gridTemplateColumns.split(' ').length") == 3, 'phone: Galeri shows three photos per row')
+    m.locator('.mtile').nth(1).click()
+    m.wait_for_selector('#mediaPane.open form.media-ed'); m.wait_for_timeout(450)
+    box = m.locator('#mediaPane').bounding_box(); sv = m.locator('#mediaPane button[value=media_save]').bounding_box()
+    check(box and box['x'] <= 1 and box['width'] >= 389 and sv and sv['y'] + sv['height'] <= 844 and m.evaluate('document.documentElement.scrollWidth') <= 390, 'phone: photo details slide in over the page, Save button visible')
+    m.locator('#mediaPane [data-media-close]').first.click(); m.wait_for_timeout(450)
+    check(not m.locator('#mediaPane').evaluate("e => e.classList.contains('open')"), 'phone: details close again')
     ctx.close()
 
 def t_parity(pn, P):
