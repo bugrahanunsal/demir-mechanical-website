@@ -320,6 +320,7 @@ body.modal-open{overflow:hidden}
 .seo-ed{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
 .sd-head{display:flex;gap:12px;align-items:center;padding:14px 14px 12px 18px;border-bottom:1px solid var(--line);flex:none}
 .sd-ttl{flex:1;min-width:0}
+.sd-ttl:focus{outline:0}
 .sd-ttl b{display:block;font-size:16.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sd-ttl small{color:var(--muted);font-size:12.5px}
 .lnk{color:var(--blue);text-decoration:none;font-weight:600;display:inline-flex;gap:4px;align-items:center}

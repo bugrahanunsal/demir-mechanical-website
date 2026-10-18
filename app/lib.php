@@ -6,7 +6,7 @@
 declare(strict_types=1);
 if (!defined('DM_APP')) { http_response_code(404); exit; }
 
-const DM_VERSION = '2026.10.18.2';
+const DM_VERSION = '2026.10.18.3';
 
 /** Python html.escape(s, quote=True) — used where the original templates escaped data. */
 function h($s): string {

@@ -450,6 +450,7 @@
       var v = 'm'; try { v = localStorage.getItem('dm-seo-view') === 'd' ? 'd' : 'm'; } catch (e) {}
       view(f, v);
       if (!dlg.open) { try { dlg.showModal(); } catch (e) { dlg.setAttribute('open', ''); } }
+      var tt = $('.sd-ttl', f); if (tt) try { tt.focus({ preventScroll: true }); } catch (e) {}   // start at the page name (screen readers, keyboard)
       document.body.classList.add('modal-open');
       setDirty(false); setUrl();
     }

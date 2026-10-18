@@ -677,7 +677,7 @@ function seo_modal_html(array $r, array $rows): string {
     $o = '<form method="post" action="index.php" class="seo-ed" data-path="' . e($r['path']) . '" novalidate>' . csrf_field()
         . '<input type="hidden" name="path" value="' . e($r['path']) . '">'
         . '<div class="sd-head"><span class="sst ' . $r['status'] . '" data-seo-st title="' . e(seo_label($r['status'])) . '"></span>'
-        . '<div class="sd-ttl"><b>' . e($r['name']) . '</b><small>' . e($r['group']) . ' · ' . site_link($r['path'], 'Sayfayı aç', 'lnk') . ' · <a class="lnk" href="index.php?p=' . e($r['edit']) . '">Tüm yazıları</a></small></div>'
+        . '<div class="sd-ttl" tabindex="-1" autofocus><b>' . e($r['name']) . '</b><small>' . e($r['group']) . ' · ' . site_link($r['path'], 'Sayfayı aç', 'lnk') . ' · <a class="lnk" href="index.php?p=' . e($r['edit']) . '">Tüm yazıları</a></small></div>'
         . '<div class="sd-nav">' . $nav($paths[$i - 1] ?? '', 'prev') . $nav($paths[$i + 1] ?? '', 'next') . '<a class="ib" href="index.php?p=seo" data-seo-close title="Kapat" aria-label="Kapat">' . aic('x') . '</a></div></div>'
         . '<div class="sd-body"><div class="flash bad" data-seo-err hidden></div>'
         . ($r['noindex'] ? '<div class="flash warn">' . ic('alert') . '<div>Bu sayfa Google\'da listelenmez (noindex). Başlığı sadece tarayıcı sekmesinde görünür.</div></div>' : '')
