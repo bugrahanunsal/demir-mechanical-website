@@ -62,13 +62,13 @@ function kinds(): array {
     return [
         'services' => ['one' => 'Hizmet', 'many' => 'Hizmetler', 'icon' => 'wrench', 'title' => 'name', 'schema' => 'schema_service', 'gone' => 'services.html',
             'intro' => 'Her hizmetin kendi sayfası vardır; menüdeki Hizmetler listesi, ana sayfa kartları, footer ve formlardaki seçenekler bu listeden otomatik oluşur. Sıra her yerde aynıdır.',
-            'new' => ['slug' => '', 'name' => '', 'icon' => 'wrench', 'emergency' => false, 'short' => '', 'intro' => '', 'included' => [], 'signs' => [], 'closing' => '', 'image' => ['file' => '', 'alt' => '', 'pos' => '50% 50%'], 'seo_title' => '', 'seo_description' => '']],
+            'new' => ['slug' => '', 'name' => '', 'icon' => 'wrench', 'emergency' => false, 'short' => '', 'intro' => '', 'included' => [], 'signs' => [], 'closing' => '', 'image' => ['file' => '', 'alt' => '', 'pos' => '50% 50%'], 'seo_title' => '', 'seo_description' => '', 'seo_keyphrase' => '', 'og_image' => '']],
         'cities' => ['one' => 'Bölge', 'many' => 'Hizmet Bölgeleri', 'icon' => 'pin', 'title' => 'name', 'schema' => 'schema_city', 'gone' => 'service-areas.html',
             'intro' => 'Her şehir veya semt için "plumber-şehir.html" sayfası oluşur (Google\'da "plumber + şehir" aramaları için). Bölgeler menüsü, ana sayfa ve footer bu listeyi kullanır.',
-            'new' => ['name' => '', 'slug' => '', 'region' => 'York Region', 'blurb' => '', 'neighbourhoods' => [], 'lat' => 43.7, 'lng' => -79.4, 'image' => ['file' => '', 'alt' => '', 'pos' => '50% 50%'], 'seo_title' => '', 'seo_description' => '']],
+            'new' => ['name' => '', 'slug' => '', 'region' => 'York Region', 'blurb' => '', 'neighbourhoods' => [], 'lat' => 43.7, 'lng' => -79.4, 'image' => ['file' => '', 'alt' => '', 'pos' => '50% 50%'], 'seo_title' => '', 'seo_description' => '', 'seo_keyphrase' => '', 'og_image' => '']],
         'projects' => ['one' => 'Proje', 'many' => 'Projeler', 'icon' => 'folder', 'title' => 'title', 'schema' => 'schema_project', 'gone' => 'projects.html',
             'intro' => 'Yayındaki her proje kendi sayfasında fotoğraf galerisiyle görünür, ana sayfada "Recent Projects" bölümü ve menüde Projeler bağlantısı otomatik çıkar. Listede en üstteki proje ilk sırada gösterilir.',
-            'new' => ['slug' => '', 'title' => '', 'published' => true, 'location' => '', 'service' => '', 'date' => '', 'summary' => '', 'photos' => [], 'description' => '', 'highlights' => [], 'seo_title' => '', 'seo_description' => '']],
+            'new' => ['slug' => '', 'title' => '', 'published' => true, 'location' => '', 'service' => '', 'date' => '', 'summary' => '', 'photos' => [], 'description' => '', 'highlights' => [], 'seo_title' => '', 'seo_description' => '', 'seo_keyphrase' => '', 'og_image' => '']],
     ];
 }
 function item_url(string $kind, array $x): string {
@@ -116,7 +116,8 @@ function out(string $title, string $active, string $main, bool $authed = true, i
         . '<div class="side-dim" data-side-close></div>'
         . '<div class="main"><header class="top"><button type="button" class="burger" data-side-open aria-label="Menüyü aç" aria-controls="side">' . aic('menu') . '</button><div class="top-t">' . e($title) . '</div><a class="top-site" href="../" target="_blank" rel="noopener" title="Siteyi görüntüle">' . aic('ext') . '</a></header>'
         . '<main class="content">' . $fl . $main . '</main></div></div>'
-        . '<script type="application/json" id="dm-icons">' . json_encode(icons(), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script></body></html>';
+        . '<script type="application/json" id="dm-icons">' . json_encode(icons(), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>'
+        . '<script type="application/json" id="seo-px">' . json_encode(seo_widths()) . '</script></body></html>';
     exit;
 }
 function admin_logo(): string {
@@ -164,7 +165,8 @@ function dash_todos(array $c, array $seo): array {
     if (!projects()) $t[] = ['info', 'Henüz yayında proje yok. İlk projeyi fotoğraflarıyla ekleyin; menüde "Projects" bağlantısı otomatik çıkar.', 'list&k=projects'];
     if (!img_exists($c['founder']['photo'] ?? [])) $t[] = ['info', 'Kurucu fotoğrafı yok (şimdilik baş harfler görünüyor).', 'sec&s=founder'];
     if (trim((string)$c['links']['facebook']) === '' && trim((string)$c['links']['instagram']) === '') $t[] = ['info', 'Facebook / Instagram bağlantıları boş.', 'sec&s=links'];
-    if ($seo['warn'] > 0) $t[] = ['warn', $seo['warn'] . ' SEO uyarısı var (başlık/açıklama uzunluğu, eksik alternatif metin…).', 'seo'];
+    if ($seo['bad'] > 0) $t[] = ['warn', $seo['bad'] . ' sayfada SEO sorunu var (boş başlık veya açıklama, alternatif metni olmayan fotoğraf…).', 'seo&f=fix'];
+    elseif ($seo['fix'] > 0) $t[] = ['info', $seo['fix'] . ' sayfanın SEO\'su iyileştirilebilir (Google başlığı, açıklama, anahtar kelime…).', 'seo&f=fix'];
     return $t;
 }
 function view_dash(): string {
@@ -178,7 +180,7 @@ function view_dash(): string {
         ['list&k=projects', 'folder', 'Projeler', count(projects()) . ' yayında' . (count($c['projects'] ?? []) > count(projects()) ? ' · ' . (count($c['projects']) - count(projects())) . ' taslak' : '')],
         ['sec&s=reviews', 'star', 'Yorumlar', count($c['reviews']) . ' yorum'],
         ['sec&s=business', 'building', 'Firma Bilgileri', e(phone())],
-        ['seo', 'search', 'SEO Paneli', $seo['pages'] . ' sayfa · ' . ($seo['warn'] ? $seo['warn'] . ' uyarı' : 'sorun yok')],
+        ['seo', 'search', 'SEO Paneli', $seo['pages'] . ' sayfa · ' . ($seo['fix'] ? $seo['fix'] . ' iyileştirilebilir' : 'hepsi iyi')],
     ];
     $o .= '<div class="tiles">';
     foreach ($tiles as [$p, $icon, $t, $s]) $o .= '<a class="tile" href="index.php?p=' . e($p) . '"><span class="ti">' . aic($icon) . '</span><span><b>' . e($t) . '</b><small>' . $s . '</small></span></a>';
@@ -300,135 +302,6 @@ function view_item(string $kind, string $idx, array $item, array $errors): strin
         $o .= '<section class="card danger"><h2>' . e($K['one']) . ' silinsin mi?</h2><p class="muted">Sayfa siteden kaldırılır; eski adres ' . e($K['gone']) . ' sayfasına yönlendirilir. Silmeden önceki hali Yedekler\'de durur.</p>'
             . post_btn(['a' => 'delete', 'k' => $kind, 'i' => $idx, 'slug' => $item['slug'] ?? ''], aic('trash') . '<span>Sil</span>', 'btn danger', '"' . $title . '" silinsin mi?') . '</section>';
     }
-    return $o;
-}
-
-/* ---------------- SEO panel ---------------- */
-/** Where each page's title/description lives and which editor changes it. */
-function page_source(string $path, array $c): ?array {
-    $fixed = ['index.html' => ['home', 'home'], 'about.html' => ['about', 'about'], 'services.html' => ['services', 'servicepage'], 'contact.html' => ['contact', 'contactpage'],
-              'faq.html' => ['faq', 'faq'], 'service-areas.html' => ['areas', 'areapage'], 'projects.html' => ['projects', 'projectpage'], '404.html' => ['notfound', 'notfound']];
-    if (isset($fixed[$path])) return ['label' => 'Sabit sayfa', 'edit' => 'sec&s=' . $fixed[$path][1], 'tpath' => 'pages.' . $fixed[$path][0] . '.seo_title', 'dpath' => 'pages.' . $fixed[$path][0] . '.seo_description', 'auto' => false];
-    foreach (['services' => 'Hizmet', 'cities' => 'Bölge', 'projects' => 'Proje'] as $k => $lbl)
-        foreach ($c[$k] ?? [] as $i => $x)
-            if (item_url($k, $x) === $path) return ['label' => $lbl, 'edit' => 'item&k=' . $k . '&i=' . $i, 'tpath' => "$k.$i.seo_title", 'dpath' => "$k.$i.seo_description", 'auto' => true];
-    return null;
-}
-function html_attr(string $tag, string $attr): ?string {
-    return preg_match('/\s' . $attr . '="([^"]*)"/', $tag, $m) ? html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8') : null;
-}
-/** Analyse every page as it is rendered from the current content. Cached per request. */
-function seo_report(): array {
-    static $rep = null;
-    if ($rep !== null) return $rep;
-    $c = C();
-    $files = render_all($c)['files'];
-    $GLOBALS['DM_C'] = $c;
-    $rows = []; $titles = []; $descs = [];
-    foreach ($files as $path => $html) {
-        if (!str_ends_with($path, '.html') || str_contains($html, '<meta http-equiv="refresh"')) continue;
-        preg_match('/<title>(.*?)<\/title>/s', $html, $m); $title = html_entity_decode($m[1] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        preg_match('/<meta name="description" content="([^"]*)"/', $html, $m); $desc = html_entity_decode($m[1] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        preg_match('/<h1[^>]*>(.*?)<\/h1>/s', $html, $m); $h1 = trim(html_entity_decode(strip_tags($m[1] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        $body = preg_replace('/<header.*?<\/header>|<footer.*?<\/footer>/s', '', substr($html, (int)strpos($html, '<body'))) ?? '';
-        $imgs = [];
-        preg_match_all('/<img\s[^>]*>/', $body, $mm);
-        foreach ($mm[0] as $tag) {
-            $src = (string)html_attr($tag, 'src'); $alt = html_attr($tag, 'alt') ?? '';
-            $cls = (string)html_attr($tag, 'class');
-            if ($src === '' || $cls === 'wm' || isset($imgs[$src]) || str_starts_with($src, 'data:') || in_array($src, [$c['branding']['header_logo_png'], $c['branding']['footer_logo']], true)) continue;
-            $imgs[$src] = ['file' => $src, 'alt' => $alt, 'decor' => $alt === '' && $cls === 'hero-bg'];
-        }
-        $titles[$title][] = $path; $descs[$desc][] = $path;
-        $rows[$path] = ['path' => $path, 'title' => $title, 'desc' => $desc, 'h1' => $h1, 'imgs' => array_values($imgs), 'noindex' => $path === '404.html'];
-    }
-    $warnTotal = 0;
-    foreach ($rows as $p => &$r) {
-        $w = [];
-        $tl = mb_strlen($r['title']); $dl = mb_strlen($r['desc']);
-        if ($tl > 60) $w[] = 'SEO başlığı uzun (' . $tl . ' karakter); Google ~60 karakterden sonrasını kesebilir.';
-        elseif ($tl < 25) $w[] = 'SEO başlığı kısa (' . $tl . ' karakter).';
-        if ($dl > 160) $w[] = 'Meta açıklama uzun (' . $dl . ' karakter); ~155–160 karakter idealdir.';
-        elseif ($dl < 70) $w[] = 'Meta açıklama kısa (' . $dl . ' karakter); 120–160 karakter önerilir.';
-        if (!$r['noindex'] && count($titles[$r['title']]) > 1) $w[] = 'Aynı SEO başlığı başka sayfada da var: ' . implode(', ', array_diff($titles[$r['title']], [$p])) . '.';
-        if (!$r['noindex'] && count($descs[$r['desc']]) > 1) $w[] = 'Aynı meta açıklama başka sayfada da var.';
-        if ($r['h1'] === '') $w[] = 'Sayfada H1 başlığı yok.';
-        foreach ($r['imgs'] as &$im) {
-            $im['size'] = is_file(DM_ROOT . '/' . $im['file']) ? (int)filesize(DM_ROOT . '/' . $im['file']) : 0;
-            $im['badname'] = (bool)preg_match('/^(img|image|photo|dsc|pxl|screenshot|whatsapp|untitled|\d)[\w\-]*$/i', pathinfo($im['file'], PATHINFO_FILENAME));
-            if (!$im['decor'] && trim($im['alt']) === '') $w[] = 'Alternatif metni boş fotoğraf: ' . basename($im['file']);
-            if ($im['badname']) $w[] = 'Dosya adı açıklayıcı değil: ' . basename($im['file']);
-        }
-        unset($im);
-        $r['warn'] = $w; $warnTotal += count($w);
-    }
-    unset($r);
-    return $rep = ['rows' => $rows, 'warn' => $warnTotal];
-}
-function seo_summary(): array {
-    try { $r = seo_report(); return ['pages' => count($r['rows']), 'warn' => $r['warn']]; }
-    catch (\Throwable $e) { return ['pages' => 0, 'warn' => 0]; }
-}
-/** Content paths that hold the alt text of an image file (photos) or of a logo. */
-function alt_paths(array $c, string $file): array {
-    $p = image_refs($c, $file);
-    $b = $c['branding'];
-    if ($file === ($b['header_logo_png'] ?? '')) $p[] = 'branding.header_logo_alt';
-    if ($file === ($b['footer_logo'] ?? '')) $p[] = 'branding.footer_logo_alt';
-    return $p;
-}
-function view_seo(string $only): string {
-    $c = C(); $rep = seo_report();
-    $o = head_block('SEO Paneli', 'Her sayfanın Google\'da görünen başlığı ve açıklaması, sayfadaki fotoğrafların dosya adları ve alternatif metinleri (alt). Buradan doğrudan düzenleyebilirsiniz; aynı fotoğraf başka sayfalarda da kullanılıyorsa alternatif metni her yerde güncellenir.');
-    $nw = count(array_filter($rep['rows'], fn($r) => $r['warn']));
-    $o .= '<div class="seo-top"><div class="seg"><a href="index.php?p=seo"' . ($only === '' ? ' class="on"' : '') . '>Tüm sayfalar (' . count($rep['rows']) . ')</a><a href="index.php?p=seo&only=warn"' . ($only === 'warn' ? ' class="on"' : '') . '>Uyarılı (' . $nw . ')</a></div>'
-        . '<div class="seo-legend"><span><i class="bar ok"></i>iyi</span><span><i class="bar warn"></i>dikkat</span></div></div>'
-        . '<p class="muted small">Öneriler: SEO başlığı 30–60 karakter, meta açıklama 120–160 karakter. Alternatif metin fotoğrafta ne olduğunu İngilizce anlatmalı (örnek: "Plumber replacing a copper riser in a North York condo"). Site İngilizce olduğu için tüm bu metinler İngilizce yazılır.</p>';
-    $cur = (string)($_GET['open'] ?? '');
-    $b = $c['branding'];
-    if ($only === '') {
-        $o .= '<details class="seo card" id="_site"' . ($cur === '_site' ? ' open' : '') . '><summary><span class="seo-p"><b>Tüm sayfalarda: logolar</b><small>Header ve footer logosunun alternatif metni</small></span></summary>'
-            . '<form method="post" class="edit seo-f" data-guard>' . csrf_field() . '<input type="hidden" name="path" value="_site"><div class="seo-imgs">';
-        foreach ([['logo_alt', $b['header_logo_png'], $b['header_logo_alt'], 'Header logosu', ''], ['flogo_alt', $b['footer_logo'], $b['footer_logo_alt'], 'Footer logosu', ' dark']] as [$n, $f, $alt, $l, $cls])
-            $o .= '<div class="si"><span class="si-img' . $cls . '"><img src="' . e(thumb_url((string)$f)) . '" alt=""></span><div class="si-b"><div class="si-n">' . e($l) . ' · ' . e(basename((string)$f)) . '</div><label class="mini">Alternatif metin<input type="text" name="' . $n . '" value="' . e((string)$alt) . '" required></label></div></div>';
-        $o .= '</div><div class="seo-act"><a class="btn sm ghost" href="index.php?p=sec&s=branding">' . aic('image') . '<span>Logoyu değiştir</span></a><button type="submit" class="btn primary sm" name="a" value="seo_save" data-busy="Kaydediliyor…">' . ic('check') . '<span>Kaydet</span></button></div></form></details>';
-    }
-    foreach ($rep['rows'] as $path => $r) {
-        if ($only === 'warn' && !$r['warn']) continue;
-        $src = page_source($path, $c);
-        $url = site_url() . '/' . ($path === 'index.html' ? '' : $path);
-        $badge = $r['warn'] ? '<span class="tag warn">' . count($r['warn']) . ' uyarı</span>' : '<span class="tag ok">' . ic('check') . 'iyi</span>';
-        $o .= '<details class="seo card" id="' . e(preg_replace('/\W/', '-', $path)) . '"' . ($cur === $path ? ' open' : '') . '><summary><span class="seo-p"><b>' . e($r['title']) . '</b><small>/' . e($path === 'index.html' ? '' : $path) . ($src ? ' · ' . e($src['label']) : '') . '</small></span>' . $badge . '</summary>';
-        $o .= '<div class="serp" aria-hidden="true"><div class="serp-u">' . e(preg_replace('#^https?://#', '', $url)) . '</div><div class="serp-t" data-serp-t>' . e($r['title']) . '</div><div class="serp-d" data-serp-d>' . e($r['desc']) . '</div></div>';
-        if ($r['warn']) { $o .= '<ul class="warns">'; foreach ($r['warn'] as $w) $o .= '<li>' . ic('alert') . e($w) . '</li>'; $o .= '</ul>'; }
-        $o .= '<form method="post" class="edit seo-f" data-guard>' . csrf_field() . '<input type="hidden" name="path" value="' . e($path) . '">';
-        if ($src) {
-            $tv = (string)path_get($c, $src['tpath'], ''); $dv = (string)path_get($c, $src['dpath'], '');
-            $ph = $src['auto'] ? ' placeholder="' . e($r['title']) . '"' : '';
-            $phd = $src['auto'] ? ' placeholder="' . e($r['desc']) . '"' : '';
-            $o .= '<div class="fld"><label class="fl">SEO başlığı' . ($src['auto'] ? ' <span class="dim">(boş = otomatik)</span>' : '') . '</label><input type="text" name="title" value="' . e($tv) . '"' . $ph . ' data-seo="title" data-serp="t"></div>'
-                . '<div class="fld"><label class="fl">Meta açıklama' . ($src['auto'] ? ' <span class="dim">(boş = otomatik)</span>' : '') . '</label><textarea name="desc" rows="3" data-seo="desc" data-serp="d"' . $phd . '>' . e($dv) . '</textarea></div>';
-        }
-        $o .= '<div class="kv"><span>H1 başlığı</span><b>' . e($r['h1'] !== '' ? $r['h1'] : '—') . '</b></div>';
-        if ($r['imgs']) {
-            $o .= '<h3 class="fh">Fotoğraflar (' . count($r['imgs']) . ')</h3><div class="seo-imgs">';
-            foreach ($r['imgs'] as $j => $im) {
-                $paths = alt_paths($c, $im['file']);
-                $o .= '<div class="si"><a class="si-img" href="../' . e($im['file']) . '" target="_blank" rel="noopener"><img src="' . e(thumb_url(is_file(DM_ROOT . '/' . img_small($im['file'])) ? img_small($im['file']) : $im['file'])) . '" alt="" loading="lazy"></a><div class="si-b">'
-                    . '<div class="si-n' . ($im['badname'] ? ' warn' : '') . '">' . e(basename($im['file'])) . ' <span class="dim">' . ($im['size'] ? kb($im['size']) : 'dosya yok') . '</span>'
-                    . ($paths && preg_match('#^assets/(photos|uploads)/#', $im['file']) ? ' <button type="button" class="link" data-rename="' . e($im['file']) . '">Dosya adını değiştir</button>' : '') . '</div>';
-                if ($im['decor']) $o .= '<div class="dim small">Dekoratif arka plan (alternatif metin gerekmez)</div>';
-                elseif ($paths) $o .= '<label class="mini">Alternatif metin<input type="text" name="alt[' . $j . ']" value="' . e($im['alt']) . '"><input type="hidden" name="altf[' . $j . ']" value="' . e($im['file']) . '"></label>'
-                    . (count(image_refs($c, $im['file'])) > 1 ? '<div class="dim small">Bu fotoğraf ' . count(image_refs($c, $im['file'])) . ' yerde kullanılıyor; hepsi güncellenir.</div>' : '');
-                else $o .= '<div class="small"><span class="dim">Alternatif metin:</span> ' . e($im['alt'] !== '' ? $im['alt'] : '—') . ' <span class="dim">(otomatik)</span></div>';
-                $o .= '</div></div>';
-            }
-            $o .= '</div>';
-        }
-        $o .= '<div class="seo-act">' . ($src ? '<a class="btn sm ghost" href="index.php?p=' . e($src['edit']) . '">' . aic('edit') . '<span>Sayfanın tüm yazıları</span></a>' : '') . site_link($path, 'Sayfayı aç')
-            . '<button type="submit" class="btn primary sm" name="a" value="seo_save" data-busy="Kaydediliyor…">' . ic('check') . '<span>Kaydet</span></button></div></form></details>';
-    }
-    $o .= '<form method="post" id="renameForm" hidden>' . csrf_field() . '<input type="hidden" name="a" value="seo_rename"><input type="hidden" name="file"><input type="hidden" name="name"><input type="hidden" name="back"></form>';
     return $o;
 }
 

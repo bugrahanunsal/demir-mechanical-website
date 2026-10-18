@@ -9,7 +9,7 @@ mailbox password and an old site-links.js), starts `php -S` with _dev/router.php
 setup, login + rate limit, CSRF, every editor, uploads (logo, photos, project gallery), projects + photo viewer,
 SEO panel, backups/restore/import/downloads, preview, password change, version rebuild, deploy hook, access rules.
 """
-import io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, zipfile, urllib.request, urllib.error
+import io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, zipfile, urllib.request, urllib.error, urllib.parse
 from PIL import Image, ImageDraw
 from playwright.sync_api import sync_playwright
 
@@ -445,55 +445,177 @@ def t_reviews_faq(pn, P):
     check('Do you offer free estimates?' in rd('faq.html'), 'new FAQ question on the FAQ page')
     check('"name": "Do you offer free estimates?"' in rd('faq.html'), 'new FAQ question in Google FAQ data')
 
+def wait_until(p, fn, timeout=8.0):
+    end = time.time() + timeout
+    while time.time() < end:
+        if fn(): return True
+        p.wait_for_timeout(150)
+    return False
+
+def seo_open(p, path):
+    p.locator(f'.srow[data-path="{path}"] a').click()
+    p.wait_for_selector(f'#seoModal form.seo-ed[data-path="{path}"]')
+    return p.locator('#seoModal form.seo-ed')
+
+def seo_save(p):
+    p.locator('#seoModal button[value=seo_save]').click()
+    p.wait_for_selector('.toast', timeout=15000)
+    txt = p.locator('.toast').last.inner_text()
+    p.evaluate("document.querySelectorAll('.toast').forEach(t => t.remove())")
+    return txt
+
+def og_meta(html):
+    return re.findall(r'<meta property="og:image" content="([^"]*)"', html)
+
 def t_seo(pn, P):
     p = pn.p
+    c = content()
     pn.go('seo')
-    d = p.locator('details.seo', has=p.locator('input[name=path][value="about.html"]'))
-    d.locator('summary').click()
-    d.locator('[name=title]').fill('About Demir Mechanical | Licensed Toronto Plumbers Since 2010')
-    check('bad' in (d.locator('.cnt').first.get_attribute('class') or ''), 'title counter turns red over 60 characters')
-    check(d.locator('[data-serp-t]').inner_text().startswith('About Demir Mechanical'), 'Google preview follows typing')
-    d.locator('[name=title]').fill('About Demir Mechanical | Licensed Toronto Plumbers')
-    with p.expect_navigation(): d.locator('button[value=seo_save]').click()
-    check('<title>About Demir Mechanical | Licensed Toronto Plumbers</title>' in rd('about.html'), 'SEO title changed from the SEO panel')
-    # empty title on a service page -> automatic
-    d = p.locator('details.seo', has=p.locator('input[name=path][value="drain-cleaning.html"]'))
-    if d.get_attribute('open') is None: d.locator('summary').click()
-    d.locator('[name=title]').fill('Drain Cleaning Toronto | Same-Day Service')
-    alt = d.locator('input[name^=alt]').first
-    alt.fill('Technician snaking a clogged kitchen drain in Toronto')
-    f = d.locator('input[name^=altf]').first.input_value()
-    with p.expect_navigation(): d.locator('button[value=seo_save]').click()
+    projects = [x for x in c['projects'] if x.get('published') and x.get('slug')]
+    expect = 7 + (1 if projects else 0) + len(c['services']) + len(c['cities']) + len(projects)
+    rows = p.locator('.srow')
+    check(rows.count() == expect, f'SEO list shows every page ({rows.count()} / {expect})')
+    groups = [g.text_content().split(' ')[0] for g in p.locator('.sg-t').all()]
+    check(groups == ['Sayfalar', 'Hizmetler', 'Bölgeler'] + (['Projeler'] if projects else []), f'pages grouped: pages, services, areas, projects ({groups})')
+    check(p.locator('.srow[data-path="404.html"]').get_attribute('data-st') == 'off', '404 page shown as hidden from Google (grey)')
+    check(p.locator('.srow[data-path="index.html"] .srow-g').inner_text() == c['pages']['home']['seo_title'], 'row shows the Google title')
+    p.fill('#seoSearch', 'north york')
+    vis = [r.get_attribute('data-path') for r in p.locator('.srow:not([hidden])').all()]
+    check('plumber-north-york.html' in vis and len(vis) < expect and all('north' in (p.locator(f'.srow[data-path="{v}"]').get_attribute('data-q')) for v in vis), f'search filters the list ({len(vis)} rows)')
+    p.fill('#seoSearch', '')
+    p.click('#seoChips a[data-f=fix]')
+    sts = [r.get_attribute('data-st') for r in p.locator('.srow:not([hidden])').all()]
+    check(sts and all(x in ('ok', 'bad') for x in sts) and 'f=fix' in p.url, f'"İyileştirilecek" shows only pages to improve ({len(sts)})')
+    p.click('#seoChips a[data-f=""]')
+    # the editor window opens without leaving the page
+    f = seo_open(p, 'about.html')
+    check(p.evaluate("document.querySelector('#seoModal').matches(':modal')") and 'edit=about.html' in p.url, 'editor opens as a window, address remembers the page')
+    php_px = int(p.locator('.srow[data-path="about.html"]').get_attribute('data-px'))
+    js_px = int(re.search(r'yaklaşık (\d+)', f.locator('[data-meter-txt=title]').inner_text()).group(1))
+    check(php_px == js_px, f'title width the same in PHP and JavaScript ({php_px} / {js_px} px)')
+    f.locator('[name=title]').fill('About Demir Mechanical & Construction | Licensed Toronto Plumbers Since 2010 and More')
+    check('ok' in f.locator('[data-meter=title]').get_attribute('class') and int(re.search(r'yaklaşık (\d+)', f.locator('[data-meter-txt=title]').inner_text()).group(1)) > 600, 'title meter warns over 600 px')
+    p.click('#seoModal [data-seo-view=d]')
+    check(f.locator('[data-gp-t]').inner_text().endswith(' ...'), 'computer preview cuts a long title like Google')
+    p.click('#seoModal [data-seo-view=m]')
+    f.locator('[name=kp]').fill('emergency plumber toronto')
+    p.wait_for_selector('#seoModal details.sc[data-sc=todo] li:has-text("başlığında yok")', timeout=8000)
+    check(True, 'SEO check updates while typing (keyphrase missing from the title)')
+    before = f.locator('[name=title]').input_value()
+    f.locator('[data-seo-suggest=title]').click()
+    wait_until(p, lambda: f.locator('[name=title]').input_value() != before)
+    t = f.locator('[name=title]').input_value()
+    tpx = int(re.search(r'yaklaşık (\d+)', f.locator('[data-meter-txt=title]').inner_text()).group(1))
+    check(t.lower().startswith('emergency plumber toronto') and tpx <= 600, f'"Öner" writes a title with the keyphrase that fits ({t} · {tpx}px)')
+    before = f.locator('[name=desc]').input_value()
+    f.locator('[data-seo-suggest=desc]').click()
+    wait_until(p, lambda: f.locator('[name=desc]').input_value() != before)
+    d = f.locator('[name=desc]').input_value()
+    check(120 <= len(d) <= 156 and 'emergency plumber' in d.lower(), f'"Öner" writes a 120–156 character description ({len(d)})')
+    check(wait_until(p, lambda: p.locator('#seoModal details.sc li', has_text='başlığında yok').count() == 0), 'check clears once the title has the keyphrase')
+    f.locator('[data-og-act=pick]').click()
+    p.wait_for_selector('#seoModal .ogp')
+    pick = f.locator('.ogp').first
+    chosen = pick.get_attribute('data-og-pick')
+    pick.click()
+    check(f.locator('[data-og-val]').input_value() == chosen, f'sharing image picked from the site photos ({chosen})')
+    msg = seo_save(p)
+    a = rd('about.html')
+    check('Kaydedildi' in msg and f'<title>{t.replace("&", "&amp;")}</title>' in a, 'saved from the window: new title on the page')
+    check(og_meta(a) == [f'https://demirmechanical.com/{chosen}'] and 'og:image:width' in a, 'chosen sharing image on the page (with its size)')
+    cc = content()['pages']['about']
+    check(cc['seo_keyphrase'] == 'emergency plumber toronto' and cc['og_image'] == chosen, 'keyphrase and sharing image stored')
+    row = p.locator('.srow[data-path="about.html"]')
+    check(row.get_attribute('data-ch') == '1' and t in row.inner_text(), 'list row updated after saving')
+    f = p.locator('#seoModal form.seo-ed')
+    f.locator('[data-og-act=none]').click(); seo_save(p)
+    check(og_meta(rd('about.html')) == [], '"Görselsiz paylaş" removes og:image')
+    f = p.locator('#seoModal form.seo-ed')
+    f.locator('[data-seo-reset]').click()
+    check(f.locator('[name=title]').input_value() == c['pages']['about']['seo_title'], '"Orijinallere dön" brings back the original title')
+    seo_save(p)
+    a = rd('about.html')
+    site_og = content()['site']['og_image']
+    check(content()['pages']['about']['seo_title'] == c['pages']['about']['seo_title'] and og_meta(a) == ['https://demirmechanical.com/' + site_og], f'originals saved: title and automatic sharing image back ({site_og})')
+    # previous / next
+    paths = [r.get_attribute('data-path') for r in p.locator('.srow').all()]
+    p.locator('#seoModal [data-seo-nav=next]').click()
+    p.wait_for_selector(f'#seoModal form.seo-ed[data-path="{paths[paths.index("about.html") + 1]}"]')
+    check(True, 'next page button opens the next page of the list')
+    # unsaved changes are not lost by accident
+    f = p.locator('#seoModal form.seo-ed')
+    f.locator('[name=kp]').fill('unsaved keyphrase')
+    msgs = []
+    p.once('dialog', lambda dl: (msgs.append(dl.message), dl.dismiss()))
+    p.locator('#seoModal .sd-fa [data-seo-close]').click(); p.wait_for_timeout(300)
+    check(msgs and p.locator('#seoModal[open]').count() == 1, 'closing with unsaved changes asks first')
+    p.once('dialog', lambda dl: dl.accept())
+    p.keyboard.press('Escape'); p.wait_for_timeout(300)
+    check(p.locator('#seoModal[open]').count() == 0 and 'edit=' not in p.url, 'Esc closes the window')
+    # photos: file name + alternative text from the window (service page; the photo is used on other pages too)
+    pn.go('seo&edit=drain-cleaning.html')
+    check(p.evaluate("document.querySelector('#seoModal').matches(':modal')"), 'link with &edit= opens the window directly')
+    f = p.locator('#seoModal form.seo-ed')
+    si = f.locator('.si').first
+    old = si.locator('input[name^="altf["]').input_value()
+    si.locator('input[name^="fname["]').fill('Drain Snake Kitchen Sink Toronto')
+    si.locator('input[name^="alt["]').fill('Technician snaking a clogged kitchen drain in Toronto')
+    tricky = 'Drain Cleaning — Toronto’s “Same-Day” Service | 24/7 & More…'
+    f.locator('[name=title]').fill(tricky)
+    js_px = int(re.search(r'yaklaşık (\d+)', f.locator('[data-meter-txt=title]').inner_text()).group(1))
+    f.locator('[data-og-up]').set_input_files(P['big'])
+    p.wait_for_selector('#seoModal [data-og-st]:has-text("Yüklendi")', timeout=30000)
+    og = f.locator('[data-og-val]').input_value()
+    check(og.startswith('assets/uploads/og/') and og.endswith('.jpg') and Image.open(os.path.join(SITE, og)).size == (1200, 630), f'new sharing image cropped to 1200×630 JPG ({og})')
+    msg = seo_save(p)
+    new = 'assets/uploads/photos/drain-snake-kitchen-sink-toronto.webp'
     page = rd('drain-cleaning.html')
-    check('<title>Drain Cleaning Toronto | Same-Day Service</title>' in page, 'service title override')
-    check('alt="Technician snaking a clogged kitchen drain in Toronto"' in page, 'alt text changed from the SEO panel')
-    refs = [k for k in json.dumps(content())] and json.dumps(content()).count('Technician snaking a clogged kitchen drain in Toronto')
-    check(refs >= 1, 'alt text stored in the content')
-    # rename a photo file
-    d = p.locator('details.seo', has=p.locator('input[name=path][value="drain-cleaning.html"]'))
-    if d.get_attribute('open') is None: d.locator('summary').click()
-    btn = d.locator('[data-rename]').first
-    old = btn.get_attribute('data-rename')
-    p.once('dialog', lambda dl: dl.accept('drain-snake-kitchen-sink-toronto'))
-    with p.expect_navigation(): btn.click()
-    page = rd('drain-cleaning.html')
-    check('assets/photos/drain-snake-kitchen-sink-toronto.webp' in page and old not in page, f'photo file renamed ({old} -> drain-snake-kitchen-sink-toronto.webp)')
-    check(exists(old) and exists('assets/photos/drain-snake-kitchen-sink-toronto.webp'), 'old file kept for older backups')
-    check(exists('assets/photos/drain-snake-kitchen-sink-toronto-sm.webp'), 'phone copy renamed too')
-    # clear service title again -> automatic one comes back
-    d = p.locator('details.seo', has=p.locator('input[name=path][value="drain-cleaning.html"]'))
-    if d.get_attribute('open') is None: d.locator('summary').click()
-    d.locator('[name=title]').fill('')
-    with p.expect_navigation(): d.locator('button[value=seo_save]').click()
-    check('<title>Drain Cleaning Toronto &amp; GTA | Demir Mechanical</title>' in rd('drain-cleaning.html'), 'empty title -> automatic title again')
-    # fixed page title cannot be emptied
-    d = p.locator('details.seo', has=p.locator('input[name=path][value="contact.html"]'))
-    d.locator('summary').click(); d.locator('[name=title]').fill('')
-    with p.expect_navigation(): d.locator('button[value=seo_save]').click()
-    check('boş bırakılamaz' in pn.flash(), 'fixed page title cannot be empty')
-    # bad photo file name is flagged
-    pn.go('seo&only=warn')
-    check(p.locator('details.seo').count() >= 1, 'warnings filter shows pages with warnings')
+    check('drain-snake-kitchen-sink-toronto.webp' in msg and new in page and old not in page, f'photo renamed from the SEO window ({old} -> {new})')
+    check(exists(old) and exists(new) and exists(new.replace('.webp', '-sm.webp')), 'old file kept for older backups, phone copy renamed too')
+    check('alt="Technician snaking a clogged kitchen drain in Toronto"' in page, 'alternative text changed from the SEO window')
+    check(new in rd('index.html') and old not in rd('index.html'), 'every page using the photo gets the new name (home page card)')
+    php_px = int(p.locator('.srow[data-path="drain-cleaning.html"]').get_attribute('data-px'))
+    check(php_px == js_px, f'width of a title with dashes, quotes and … the same in PHP and JavaScript ({php_px} / {js_px} px)')
+    check(og_meta(page) == ['https://demirmechanical.com/' + og], 'uploaded sharing image on the page')
+    f = p.locator('#seoModal form.seo-ed')
+    check(f.locator('.si input[name^="altf["]').first.input_value() == new, 'window shows the new file name after saving')
+    f.locator('.si input[name^="alt["]').first.fill('')
+    p.locator('#seoModal button[value=seo_save]').click()
+    p.wait_for_selector('#seoModal [data-seo-err]:not([hidden])')
+    check('boş bırakılamaz' in f.locator('[data-seo-err]').inner_text(), 'empty alternative text refused')
+    f.locator('.si input[name^="alt["]').first.fill('Technician snaking a clogged kitchen drain in Toronto')
+    f.locator('.si input[name^="fname["]').first.fill('???')
+    p.locator('#seoModal button[value=seo_save]').click(); p.wait_for_timeout(1200)
+    check('geçersiz' in p.locator('#seoModal [data-seo-err]').inner_text(), 'unusable file name refused')
+    # fixed pages keep a title
+    p.once('dialog', lambda dl: dl.accept())
+    pn.go('seo&edit=contact.html')
+    f = p.locator('#seoModal form.seo-ed')
+    f.locator('[name=title]').fill('')
+    p.locator('#seoModal button[value=seo_save]').click()
+    p.wait_for_selector('#seoModal [data-seo-err]:not([hidden])')
+    check('boş bırakılamaz' in f.locator('[data-seo-err]').inner_text() and '<title>Contact |' in rd('contact.html'), 'fixed page title cannot be emptied')
+    # project without a keyphrase gets the hint
+    if projects:
+        p.once('dialog', lambda dl: dl.accept())
+        pn.go('seo&edit=project-' + projects[0]['slug'] + '.html')
+        check(p.locator('#seoModal details.sc li:has-text("Odak anahtar kelime yok")').count() == 1, 'project page: asks for a keyphrase')
+    # works without JavaScript too (plain form post)
+    cookies = {ck['name']: ck['value'] for ck in p.context.cookies()}
+    tok = p.locator('body').get_attribute('data-csrf')
+    faq = content()['pages']['faq']
+    data = urllib.parse.urlencode({'a': 'seo_save', '_csrf': tok, 'path': 'faq.html', 'kp': 'plumbing questions toronto', 'title': faq['seo_title'], 'desc': faq['seo_description'], 'og': ''}).encode()
+    st, _ = http('/admin/index.php', 'POST', data, {'Cookie': 'dm_admin=' + cookies['dm_admin'], 'Content-Type': 'application/x-www-form-urlencoded', 'Origin': BASE})
+    check(st == 303 and content()['pages']['faq']['seo_keyphrase'] == 'plumbing questions toronto', 'plain form post saves and returns to the window')
+    pn.go('seo&f=changed')
+    ch = [r.get_attribute('data-path') for r in p.locator('.srow:not([hidden])').all()]
+    check('drain-cleaning.html' in ch and 'faq.html' in ch and 'index.html' not in ch, f'"Değiştirilen" lists edited pages ({len(ch)})')
+    # logos (all pages)
+    p.fill('[name=logo_alt]', 'Demir Mechanical logo')
+    with p.expect_navigation(): p.click('.seo-logos button[value=seo_save]')
+    check('alt="Demir Mechanical logo"' in rd('index.html'), 'logo alternative text saved from the SEO page')
+    pn.go('dash')
+    check('iyileştirilebilir' in p.locator('.tile', has_text='SEO').inner_text() or 'hepsi iyi' in p.locator('.tile', has_text='SEO').inner_text(), 'dashboard shows the SEO summary')
 
 def t_preview(pn, P):
     p = pn.p
@@ -723,6 +845,14 @@ def t_mobile(pn, P, browser):
         m.goto(ADMIN + 'index.php?p=' + q); m.wait_for_load_state()
         sw = m.evaluate('document.documentElement.scrollWidth')
         check(sw <= 390, f'phone: {q} fits the screen ({sw}px)')
+    m.goto(ADMIN + 'index.php?p=seo'); m.wait_for_load_state()
+    m.locator('.srow[data-path="drain-cleaning.html"] a').click()
+    m.wait_for_selector('#seoModal form.seo-ed')
+    box = m.locator('#seoModal').bounding_box()
+    inner = m.evaluate("Math.max(document.querySelector('#seoModal').scrollWidth, document.querySelector('#seoModal .sd-body').scrollWidth)")
+    save = m.locator('#seoModal button[value=seo_save]').bounding_box()
+    check(box and box['width'] >= 389 and box['height'] >= 843 and inner <= 390, f'phone: SEO window fills the screen without sideways scrolling ({inner}px)')
+    check(save and save['y'] + save['height'] <= 844 and save['width'] > 80, 'phone: Save button visible at the bottom of the SEO window')
     ctx.close()
 
 def t_parity(pn, P):

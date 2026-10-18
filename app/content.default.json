@@ -290,6 +290,8 @@
   "home": {
    "seo_title": "Toronto Plumber & Mechanical Contractor | Demir Mechanical",
    "seo_description": "Licensed Toronto plumber & mechanical contractor. 24/7 emergency plumbing, drains, water heaters, sewer repair and riser renovations across the GTA.",
+   "seo_keyphrase": "Toronto plumber",
+   "og_image": "",
    "hero_image": {
     "file": "assets/photos/toronto-plumber-hero-background.webp",
     "alt": "Plumber adjusting copper water lines with a wrench under a wall-mounted boiler",
@@ -469,6 +471,8 @@
   "about": {
    "seo_title": "About Us | Demir Mechanical & Construction — Toronto",
    "seo_description": "About Demir Mechanical & Construction — a locally owned, licensed plumbing and mechanical contractor serving Toronto and the GTA. Founded by Barış Demir.",
+   "seo_keyphrase": "Demir Mechanical",
+   "og_image": "",
    "title": "About Demir Mechanical & Construction",
    "lead": "A locally owned Toronto contractor delivering licensed plumbing and mechanical service across the GTA — built on quality, integrity, and performance.",
    "story_eyebrow": "Our Story",
@@ -514,6 +518,8 @@
   "services": {
    "seo_title": "Plumbing & Mechanical Services Toronto | Demir",
    "seo_description": "Plumbing & mechanical services in Toronto: repairs, drain cleaning, water heaters, sewer repair, toilets, riser and mechanical room renovation.",
+   "seo_keyphrase": "plumbing and mechanical services Toronto",
+   "og_image": "",
    "title": "Plumbing & Mechanical Services in Toronto",
    "lead": "From emergency repairs to full mechanical room renovations — dependable, licensed service for homes, businesses, and multi-unit buildings across Toronto and the GTA.",
    "work": [
@@ -586,6 +592,8 @@
   "contact": {
    "seo_title": "Contact | Demir Mechanical — Toronto Plumber",
    "seo_description": "Call +1 (647) 919-3677 or request a free quote. Licensed 24/7 plumbing & mechanical service across Toronto and the GTA.",
+   "seo_keyphrase": "contact Demir Mechanical",
+   "og_image": "",
    "title": "Contact Demir Mechanical",
    "lead": "Have a question, need a quote, or dealing with an emergency? We're here to help — 24/7 across Toronto and the GTA.",
    "eyebrow": "Get in Touch",
@@ -607,6 +615,8 @@
   "faq": {
    "seo_title": "Plumbing FAQ | Demir Mechanical — Toronto & GTA",
    "seo_description": "Answers to common plumbing questions in Toronto: emergencies, pricing, estimates, water heaters, drains, backwater valves and riser renovations.",
+   "seo_keyphrase": "plumbing FAQ Toronto",
+   "og_image": "",
    "title": "Plumbing FAQ — Toronto & the GTA",
    "lead": "Straight answers to the questions we hear most — emergencies, pricing, services and building projects. Can't find yours? Call us any time.",
    "side_title": "Still have a question?",
@@ -617,6 +627,8 @@
   "areas": {
    "seo_title": "Service Areas | Plumber Toronto & GTA | Demir Mechanical",
    "seo_description": "Demir Mechanical serves Toronto, North York, Scarborough, Vaughan, Markham, Richmond Hill, Mississauga, Brampton, Oakville and more of the GTA.",
+   "seo_keyphrase": "plumber Toronto GTA",
+   "og_image": "",
    "title": "Service Areas — Toronto & the GTA",
    "lead": "Based in Thornhill, Ontario, Demir Mechanical & Construction serves homes, businesses and buildings across Toronto, York, Peel, Halton and Durham regions.",
    "eyebrow": "Where We Work",
@@ -679,6 +691,8 @@
   "notfound": {
    "seo_title": "Page Not Found | Demir Mechanical & Construction",
    "seo_description": "This page could not be found. Browse plumbing and mechanical services, service areas across Toronto and the GTA, or contact our licensed team 24/7.",
+   "seo_keyphrase": "",
+   "og_image": "",
    "title": "Sorry — that page doesn't exist",
    "lead": "The link may be old or mistyped. Here are the quickest ways to get help from our licensed plumbers.",
    "eyebrow": "Popular pages",
@@ -690,6 +704,8 @@
   "projects": {
    "seo_title": "Our Projects | Demir Mechanical — Toronto & GTA",
    "seo_description": "Recent plumbing and mechanical projects by Demir Mechanical across Toronto and the GTA — riser renovations, mechanical rooms, water heaters, drains and more.",
+   "seo_keyphrase": "plumbing projects Toronto",
+   "og_image": "",
    "title": "Our Projects",
    "lead": "Recent plumbing and mechanical work by our licensed team across Toronto and the Greater Toronto Area.",
    "eyebrow": "Our Work",
@@ -751,7 +767,9 @@
     "key": "plumbing-repair-service-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "drain-cleaning",
@@ -782,7 +800,9 @@
     "key": "drain-cleaning-service-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "water-heaters",
@@ -813,7 +833,9 @@
     "key": "tankless-water-heater-installation-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "plumbing-services",
@@ -844,7 +866,9 @@
     "key": "plumbing-services-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "sewer-repair",
@@ -875,7 +899,9 @@
     "key": "sewer-line-repair-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "mechanical-room-renovation",
@@ -906,7 +932,9 @@
     "key": "mechanical-room-renovation-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "riser-renovation",
@@ -937,7 +965,9 @@
     "key": "riser-renovation-plumbing-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "slug": "toilet-installation",
@@ -968,7 +998,9 @@
     "key": "toilet-installation-toronto"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   }
  ],
  "cities": [
@@ -994,7 +1026,9 @@
     "key": "plumber-toronto-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "North York",
@@ -1018,7 +1052,9 @@
     "key": "plumber-north-york-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Scarborough",
@@ -1042,7 +1078,9 @@
     "key": "plumber-scarborough-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Etobicoke",
@@ -1066,7 +1104,9 @@
     "key": "plumber-etobicoke-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "York",
@@ -1089,7 +1129,9 @@
     "key": "plumber-york-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "East York",
@@ -1112,7 +1154,9 @@
     "key": "plumber-east-york-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Vaughan",
@@ -1136,7 +1180,9 @@
     "key": "plumber-vaughan-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Thornhill",
@@ -1160,7 +1206,9 @@
     "key": "plumber-thornhill-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Markham",
@@ -1184,7 +1232,9 @@
     "key": "plumber-markham-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Richmond Hill",
@@ -1208,7 +1258,9 @@
     "key": "plumber-richmond-hill-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Mississauga",
@@ -1232,7 +1284,9 @@
     "key": "plumber-mississauga-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Brampton",
@@ -1256,7 +1310,9 @@
     "key": "plumber-brampton-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Oakville",
@@ -1280,7 +1336,9 @@
     "key": "plumber-oakville-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Aurora",
@@ -1303,7 +1361,9 @@
     "key": "plumber-aurora-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Newmarket",
@@ -1326,7 +1386,9 @@
     "key": "plumber-newmarket-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Pickering",
@@ -1350,7 +1412,9 @@
     "key": "plumber-pickering-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "Ajax",
@@ -1373,7 +1437,9 @@
     "key": "plumber-ajax-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   },
   {
    "name": "King City",
@@ -1396,7 +1462,9 @@
     "key": "plumber-king-city-on"
    },
    "seo_title": "",
-   "seo_description": ""
+   "seo_description": "",
+   "seo_keyphrase": "",
+   "og_image": ""
   }
  ],
  "faq": {

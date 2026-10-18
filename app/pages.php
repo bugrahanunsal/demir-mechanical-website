@@ -764,16 +764,44 @@ function custom_html(string $where): string {
     return custom_on() && empty($GLOBALS['DM_PREVIEW']) ? trim((string)cget('custom.' . $where)) : '';
 }
 
+/* ---------------- sharing image (og:image) ---------------- */
+/** Where a page's own settings live in the content ("pages.home", "services.3" …); '' for unknown pages. */
+function page_base(string $path): string {
+    static $fixed = ['index.html' => 'pages.home', 'about.html' => 'pages.about', 'services.html' => 'pages.services', 'contact.html' => 'pages.contact',
+                     'faq.html' => 'pages.faq', 'service-areas.html' => 'pages.areas', 'projects.html' => 'pages.projects', '404.html' => 'pages.notfound'];
+    if (isset($fixed[$path])) return $fixed[$path];
+    foreach (services() as $i => $s) if ($s['slug'] . '.html' === $path) return 'services.' . $i;
+    foreach (cities() as $i => $x) if ($x['slug'] . '.html' === $path) return 'cities.' . $i;
+    foreach (C()['projects'] ?? [] as $i => $p) if (($p['slug'] ?? '') !== '' && project_url($p) === $path) return 'projects.' . $i;
+    return '';
+}
+function og_file_ok(string $f): bool {
+    return (bool)preg_match('#^assets/[A-Za-z0-9/_\-.]+\.(webp|png|jpe?g)$#i', $f) && !str_contains($f, '..') && is_file(DM_ROOT . '/' . $f);
+}
+/** The automatic sharing image: the page's own photo, else the site image. */
+function og_auto(array $pg): string { return (string)(($pg['og'] ?? null) ?: cget('site.og_image', 'assets/favicon-512.png')); }
+/** What the page shows when it is shared: chosen in the SEO panel ("none" = no image) or the automatic one. */
+function og_image(array $pg): string {
+    $set = trim((string)cget(page_base($pg['path']) . '.og_image', ''));
+    if ($set === 'none') return '';
+    return $set !== '' && og_file_ok($set) ? $set : og_auto($pg);
+}
+function og_tags(array $pg): string {
+    $og = og_image($pg);
+    if ($og === '') return '';
+    [$w, $hh] = img_size($og);
+    return '<meta property="og:image" content="' . site_url() . '/' . t($og) . '">' . ($w > 0 ? '<meta property="og:image:width" content="' . $w . '"><meta property="og:image:height" content="' . $hh . '">' : '');
+}
+
 /* ---------------- whole document ---------------- */
 function head_full(array $pg): string {
     $site = site_url(); $path = $pg['path'];
     $url = $site . '/' . ($path === 'index.html' ? '' : $path);
-    $og = $pg['og'] ?? null; $og = $og ?: cget('site.og_image', 'assets/favicon-512.png');
     $ver = trim((string)cget('links.google_site_verification'));
     $verTag = preg_match('/^[A-Za-z0-9_\-]{10,100}$/', $ver) ? '<meta name="google-site-verification" content="' . $ver . '">' : '';
     return '<!doctype html><html lang="' . t(cget('site.lang', 'en-CA')) . '"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' . PGIN
         . '<title>' . h($pg['title']) . '</title><meta name="description" content="' . h($pg['desc']) . '"><link rel="canonical" href="' . $url . '">'
-        . '<meta property="og:type" content="website"><meta property="og:title" content="' . h($pg['title']) . '"><meta property="og:description" content="' . h($pg['desc']) . '"><meta property="og:url" content="' . $url . '"><meta property="og:image" content="' . $site . '/' . t($og) . '"><meta property="og:locale" content="' . t(cget('site.og_locale', 'en_CA')) . '">'
+        . '<meta property="og:type" content="website"><meta property="og:title" content="' . h($pg['title']) . '"><meta property="og:description" content="' . h($pg['desc']) . '"><meta property="og:url" content="' . $url . '">' . og_tags($pg) . '<meta property="og:locale" content="' . t(cget('site.og_locale', 'en_CA')) . '">'
         . '<meta name="geo.region" content="' . t(cget('site.geo_region')) . '"><meta name="geo.placename" content="' . t(cget('site.geo_placename')) . '">' . $verTag . ($pg['head_extra'] ?? '') . icons_head() . fixed('FONTS') . css() . custom_css() . custom_html('head') . '</head><body' . body_attrs($path) . '>';
 }
 
@@ -817,7 +845,7 @@ function build_site(bool $preview = false): array {
     $files = []; $meta = [];
     foreach (build_pages() as $pg) {
         $files[$pg['path']] = render_page($pg, $preview);
-        $meta[$pg['path']] = ['title' => $pg['title'], 'desc' => $pg['desc'], 'h1' => $pg['h1'] ?? '', 'sitemap' => empty($pg['nositemap'])];
+        $meta[$pg['path']] = ['title' => $pg['title'], 'desc' => $pg['desc'], 'h1' => $pg['h1'] ?? '', 'sitemap' => empty($pg['nositemap']), 'og_auto' => og_auto($pg)];
     }
     $GLOBALS['DM_PREVIEW'] = false;
     $files['sitemap.xml'] = sitemap($meta);

@@ -25,4 +25,8 @@ the admin panel UI is Turkish.
 - Panel saves are all-or-nothing: render everything in memory first (`render_all`), then back up, then write (`content_save`).
 - Custom code (Araçlar → Özel Kod, `content.custom`) is injected by `custom_css()`, `custom_js()`, `custom_html()` in `app/pages.php`.
   Pages carry `<body data-page data-type>`; anything that looks for the body tag must allow attributes (`/<body([^>]*)>/`).
+- SEO panel (`app/admin/seo.php`) analyses the rendered pages (`render_all`), never the content alone. Title widths: `seo_widths()`
+  is the single Arial table, passed to admin.js as `#seo-px` JSON (PHP and JS must agree; the e2e test checks it).
+  Per-page `seo_keyphrase` / `og_image` exist on fixed pages (defaults) and items (may be missing on old items: always `?? ''`).
+  Photo renames copy into `assets/uploads/…` (never write into `assets/photos`, which comes from git).
 - Commit messages end with the attribution lines required by the session.

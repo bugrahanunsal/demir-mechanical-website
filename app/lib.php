@@ -6,7 +6,7 @@
 declare(strict_types=1);
 if (!defined('DM_APP')) { http_response_code(404); exit; }
 
-const DM_VERSION = '2026.10.18';
+const DM_VERSION = '2026.10.18.2';
 
 /** Python html.escape(s, quote=True) — used where the original templates escaped data. */
 function h($s): string {
@@ -23,7 +23,7 @@ function fill(string $tpl, array $vars): string {
     return strtr($tpl, $r);
 }
 function slugify(string $s): string {
-    $s = strtr($s, ['ı' => 'i', 'İ' => 'i', 'ş' => 's', 'Ş' => 's', 'ğ' => 'g', 'Ğ' => 'g', 'ü' => 'u', 'Ü' => 'u', 'ö' => 'o', 'Ö' => 'o', 'ç' => 'c', 'Ç' => 'c', '&' => ' and ']);
+    $s = strtr($s, ['ı' => 'i', 'İ' => 'i', 'ş' => 's', 'Ş' => 's', 'ğ' => 'g', 'Ğ' => 'g', 'ü' => 'u', 'Ü' => 'u', 'ö' => 'o', 'Ö' => 'o', 'ç' => 'c', 'Ç' => 'c', '&' => ' and ', "'" => '', '’' => '', '‘' => '']);
     if (function_exists('iconv')) { $x = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s); if ($x !== false) $s = $x; }
     $s = strtolower($s);
     $s = preg_replace('/[^a-z0-9]+/', '-', $s) ?? '';

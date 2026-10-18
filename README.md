@@ -19,7 +19,7 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
 | `app/pages.php`, `app/lib.php` | Page renderer: builds every page from the content (pure functions, no I/O except reading images) | yes | denied to the web |
 | `app/theme/` | CSS (`style.html`), page script (`script.html`), icons, decorative SVG, fixed snippets | yes | denied |
 | `app/content.default.json` | Default content = the site as launched. New fields added here reach existing sites automatically (deep merge) | yes | denied |
-| `app/admin/` | Admin panel code: `core` (auth, CSRF, rate limit), `store` (save/publish/backups), `images` (uploads), `schema` (what is editable), `forms` (form engine), `views`, `actions`, `boot` | yes | denied |
+| `app/admin/` | Admin panel code: `core` (auth, CSRF, rate limit), `store` (save/publish/backups), `images` (uploads), `schema` (what is editable), `forms` (form engine), `views`, `actions`, `seo` (SEO panel), `boot` | yes | denied |
 | `admin/` | Panel entry point `index.php`, rebuild hook `hook.php`, `assets/admin.css`, `assets/admin.js` | yes | public (login required) |
 | `assets/` | Logos, icons, photos, cursor. `assets/uploads/` = photos uploaded in the panel | yes (uploads: no) | public |
 | `send.php`, `lib/phpmailer/` | Contact/quote form mailer (Hostinger SMTP via PHPMailer, `mail()` fallback) | yes | public / denied |
@@ -39,10 +39,20 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
 * **Site ayarları:** business info (phone/address/hours update everywhere incl. Google structured data), logo / footer logo / favicon
   uploads, header menu (order, labels, visibility, custom links) and footer, WhatsApp number + messages, social links,
   Google Analytics 4 ID, Search Console verification, suppliers.
-* **SEO paneli:** for every page the real `<title>`, meta description (with Google preview + length counters), H1, and every photo
-  with its file name, size and alt text. Titles/descriptions and alt texts are editable in place; photo files can be renamed
-  (copied to an SEO-friendly name; the old file stays so older backups keep working). Warnings for long/short/duplicate titles and
-  descriptions, missing alt texts, non-descriptive file names.
+* **SEO paneli:** one row per page (grouped: pages, services, areas, projects) with a status dot, the Google title and
+  "keyphrase · title · description" dots; search and filters (Tümü / İyileştirilecek / Değiştirilen). "Düzenle" opens an editor
+  window (AJAX, deep link `?p=seo&edit=page.html`, previous/next page):
+  focus keyphrase (only used for the check, never written into the pages; services/areas get an automatic one),
+  Google preview for phone and computer (titles are measured in pixels with Arial widths, 600px like Google — the same table
+  in PHP and JS), title and description with meters, "Öner" (rule-based suggestions with the keyphrase) and "use the original",
+  the page address (read-only, link to where it can be changed), the sharing image (og:image: pick from the site photos, upload
+  a new one = cropped to 1200×630 JPG, share without an image, back to the automatic one), every photo on the page with its
+  **file name and alternative text** (renaming copies the photo to `assets/uploads/photos/<new-name>` with its phone copy and updates
+  every reference; the old file stays for older backups), and an SEO check in Turkish (improvements / good results: keyphrase in
+  title, description, address, H1, opening paragraphs, text and alt texts, keyphrase used twice, title px, description 120–156,
+  duplicates, H1, word count, alt texts, file names, sharing image). It updates while typing (`a=seo_check`, nothing saved).
+  Code: `app/admin/seo.php`; per-page settings `seo_title`, `seo_description`, `seo_keyphrase`, `og_image` ('' = automatic,
+  'none' = no image) live at `pages.<page>` or on the service / area / project item (`page_base()` in `app/pages.php`).
 * **Yedekler:** automatic backup before every save (last 60), one-click restore, download `content.json`, download a **full zip**
   of the site (pages + panel + photos + content, without passwords), import a `content.json`, delete uploads no backup uses.
 * **Önizle:** every editor can preview the page with unsaved changes in a new tab (nothing is written).
@@ -91,7 +101,7 @@ php _dev/build.php --out=.  && php -S 127.0.0.1:8080 -t . _dev/router.php
 Tests:
 
 ```bash
-python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~170 checks, ~2 min)
+python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~220 checks, ~3 min)
 python3 _dev/tests/site_features.py  # WhatsApp / Analytics / social links in the generated pages
 python3 _dev/tests/parity.py A B     # compare two built sites page by page (normalised)
 ```

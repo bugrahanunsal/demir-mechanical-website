@@ -21,6 +21,7 @@ function image_kinds(): array {
         'flogo'    => ['logos',      800,  450, 'png'],
         'supplier' => ['suppliers',  480,  120, 'png'],
         'favicon'  => ['icons',      512,  512, 'favicon'],
+        'og'       => ['og',        1200,  630, 'cover'],       // sharing image (Facebook, WhatsApp…): 1200×630 JPG
     ];
 }
 
@@ -78,6 +79,18 @@ function gd_square($im, int $size) {
     imagecopyresampled($out, $im, 0, 0, (int)(($w - $s) / 2), (int)(($h - $s) / 2), $size, $size, $s, $s);
     return $out;
 }
+/** Crop the middle of the photo to the $tw:$th shape and shrink it to $tw×$th (small photos are not enlarged), on white. */
+function gd_cover($im, int $tw, int $th) {
+    $w = imagesx($im); $h = imagesy($im); $r = $tw / $th;
+    if ($w / $h > $r) { $ch = $h; $cw = (int)round($h * $r); } else { $cw = $w; $ch = (int)round($w / $r); }
+    $s = min(1, $tw / $cw);
+    $nw = max(1, (int)round($cw * $s)); $nh = max(1, (int)round($ch * $s));
+    $out = imagecreatetruecolor($nw, $nh);
+    imagefill($out, 0, 0, imagecolorallocate($out, 255, 255, 255));
+    imagealphablending($out, true);
+    imagecopyresampled($out, $im, 0, 0, (int)(($w - $cw) / 2), (int)(($h - $ch) / 2), $nw, $nh, $cw, $ch);
+    return $out;
+}
 function ensure_dir(string $rel): void {
     $d = DM_ROOT . '/' . $rel;
     if (!is_dir($d) && !mkdir($d, 0755, true) && !is_dir($d)) throw new RuntimeException('Klasör oluşturulamadı: ' . $rel);
@@ -115,6 +128,12 @@ function image_upload(array $f, string $kind, string $name): array {
         }
         return ['file' => $path, 'w' => imagesx($out), 'h' => imagesy($out), 'extra' => $extra];
     }
+    if ($fmt === 'cover') {                                 // JPG: every app that shows link previews can read it
+        $out = gd_cover($im, $mw, $mh);
+        $path = unique_path($dir, $base, 'jpg');
+        if (!imagejpeg($out, DM_ROOT . '/' . $path, 86)) throw new RuntimeException('Görsel kaydedilemedi.');
+        return ['file' => $path, 'w' => imagesx($out), 'h' => imagesy($out), 'extra' => []];
+    }
     if ($fmt === 'png' || $fmt === 'logo') {
         $out = gd_fit($im, $mw, $mh);
         $path = unique_path($dir, $base, 'png');
@@ -142,17 +161,19 @@ function image_upload(array $f, string $kind, string $name): array {
 }
 
 /**
- * Give a photo a new SEO file name (the phone copy too) and return the new path. The old file stays on the server,
+ * Give a photo a new SEO file name (the phone copy too) and return the new path. The photo is copied into
+ * assets/uploads (the site's own photos in assets/photos come from the code and stay untouched); the old file stays,
  * so older backups that still point to it keep working.
  */
 function image_rename(string $file, string $newName): string {
     if (!preg_match('#^assets/[a-z0-9/_\-.]+\.(webp|png|jpe?g)$#i', $file) || str_contains($file, '..')) throw new RuntimeException('Bu dosya yeniden adlandırılamaz.');
     if (!is_file(DM_ROOT . '/' . $file)) throw new RuntimeException('Dosya bulunamadı: ' . $file);
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-    $dir = dirname($file);
     $slug = substr(slugify(preg_replace('/\.(webp|png|jpe?g)$/i', '', $newName) ?? ''), 0, 80);
     if ($slug === '') throw new RuntimeException('Yeni dosya adı geçersiz. Harf, rakam ve tire kullanın.');
-    if ($dir . '/' . $slug . '.' . $ext === $file) return $file;
+    if (pathinfo($file, PATHINFO_FILENAME) === $slug) return $file;
+    $dir = str_starts_with($file, DM_UPLOADS . '/') ? dirname($file) : DM_UPLOADS . '/photos';
+    ensure_dir($dir);
     $new = unique_path($dir, $slug, $ext);
     if (!copy(DM_ROOT . '/' . $file, DM_ROOT . '/' . $new)) throw new RuntimeException('Dosya kopyalanamadı.');
     $smOld = img_small($file);

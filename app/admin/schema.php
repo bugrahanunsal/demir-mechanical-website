@@ -10,6 +10,10 @@ if (!defined('DM_APP')) { http_response_code(404); exit; }
 
 function F(string $k, string $t, string $l, array $more = []): array { return ['k' => $k, 't' => $t, 'l' => $l] + $more; }
 function HD(string $l, string $h = ''): array { return ['t' => 'heading', 'l' => $l, 'h' => $h]; }
+/** Focus keyphrase: only used by the SEO panel's check and suggestions, never shown on the site. */
+function seo_kp_field(string $k, bool $auto = false): array {
+    return F($k, 'text', 'Odak anahtar kelime', ['max' => 100, 'h' => 'Google\'da hangi aramayla bulunmak istiyorsunuz (İngilizce)?' . ($auto ? ' Boş = otomatik.' : '') . ' SEO Paneli bununla kontrol eder ve öneri verir; sitede görünmez.']);
+}
 
 function icon_options(): array {
     $o = [];
@@ -124,6 +128,7 @@ function schema_sections(): array {
         HD('SEO'),
         F('pages.home.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']),
         F('pages.home.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        seo_kp_field('pages.home.seo_keyphrase'),
         HD('Giriş (hero)'),
         $img('pages.home.hero_image', 'Arka plan fotoğrafı', 'hero', ['h' => '1920×1080 yatay; konu sağ yarıda olmalı.']),
         F('pages.home.badge', 'text', 'Rozet yazısı'), F('pages.home.badge_more', 'text', 'Rozet devamı (çok küçük ekranlarda gizlenir)'),
@@ -177,7 +182,7 @@ function schema_sections(): array {
     /* ------------------------------------------------------------------ */
     'about' => ['title' => 'Hakkımızda Sayfası', 'icon' => 'shield', 'fields' => [
         HD('SEO'),
-        F('pages.about.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.about.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        F('pages.about.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.about.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.about.seo_keyphrase'),
         HD('Sayfa başlığı'), F('pages.about.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.about.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         HD('Hikayemiz'), F('pages.about.story_eyebrow', 'text', 'Üst etiket'), F('pages.about.story_title', 'text', 'Başlık'),
         F('pages.about.story', 'lines', 'Paragraflar (her satır bir paragraf)', ['rows' => 6]),
@@ -190,7 +195,7 @@ function schema_sections(): array {
     ]],
     /* ------------------------------------------------------------------ */
     'contactpage' => ['title' => 'İletişim Sayfası', 'icon' => 'mail', 'fields' => [
-        HD('SEO'), F('pages.contact.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.contact.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        HD('SEO'), F('pages.contact.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.contact.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.contact.seo_keyphrase'),
         HD('Sayfa'), F('pages.contact.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.contact.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         F('pages.contact.eyebrow', 'text', 'Üst etiket'), F('pages.contact.info_title', 'text', 'Bilgiler başlığı'),
         F('pages.contact.phone_label', 'text', 'Telefon etiketi'), F('pages.contact.email_label', 'text', 'E-posta etiketi'), F('pages.contact.address_label', 'text', 'Adres etiketi'), F('pages.contact.hours_label', 'text', 'Saat etiketi'),
@@ -204,7 +209,7 @@ function schema_sections(): array {
         HD('Ana sayfa ve iletişim sayfası SSS'),
         F('faq.home', 'repeater', 'Sorular', ['title' => 'q', 'add' => 'Soru ekle', 'min' => 1, 'new' => ['q' => '', 'a' => ''], 'fields' => [F('q', 'text', 'Soru', ['req' => true]), F('a', 'textarea', 'Cevap', ['req' => true, 'rows' => 3])]]),
         HD('SSS sayfası'),
-        F('pages.faq.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.faq.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        F('pages.faq.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.faq.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.faq.seo_keyphrase'),
         F('pages.faq.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.faq.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         F('faq.categories', 'repeater', 'Kategoriler', ['title' => 'name', 'add' => 'Kategori ekle', 'min' => 1, 'new' => ['key' => '', 'name' => '', 'items' => [['q' => '', 'a' => '']]], 'fields' => [
             F('name', 'text', 'Kategori adı', ['req' => true]),
@@ -241,7 +246,7 @@ function schema_sections(): array {
     /* ------------------------------------------------------------------ */
     'servicepage' => ['title' => 'Hizmet Sayfaları (ortak)', 'icon' => 'repair', 'intro' => 'Hizmetler sayfası ve tüm hizmet sayfalarında ortak kullanılan yazılar. {service} = hizmet adı, {service_lower} = küçük harfli hizmet adı, {phone} = telefon.', 'fields' => [
         HD('Hizmetler sayfası (services.html)'),
-        F('pages.services.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.services.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        F('pages.services.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.services.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.services.seo_keyphrase'),
         F('pages.services.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.services.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         F('pages.services.work', 'repeater', 'Alt fotoğraf bandı', ['title' => 'tag', 'min' => 3, 'max_items' => 3, 'fields' => [F('image', 'image', 'Fotoğraf', ['kind' => 'photo']), F('tag', 'text', 'Etiket'), F('label', 'text', 'Fotoğraf yokken yazı')]]),
         HD('Her hizmet sayfasında'),
@@ -263,7 +268,7 @@ function schema_sections(): array {
     /* ------------------------------------------------------------------ */
     'areapage' => ['title' => 'Bölge Sayfaları (ortak)', 'icon' => 'pin', 'intro' => 'Hizmet bölgeleri sayfası ve her şehir sayfasında ortak yazılar. {city} = şehir, {region} = bölge, {neighbourhoods} = semtler, {where} = otomatik ifade, {phone} = telefon.', 'fields' => [
         HD('Hizmet bölgeleri sayfası (service-areas.html)'),
-        F('pages.areas.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.areas.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        F('pages.areas.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.areas.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.areas.seo_keyphrase'),
         F('pages.areas.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.areas.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         F('pages.areas.eyebrow', 'text', 'Üst etiket'), F('pages.areas.list_title', 'text', 'Liste başlığı'), F('pages.areas.list_text', 'text', 'Liste açıklaması'),
         F('pages.areas.regions', 'lines', 'Bölge sırası (her satıra bir)', ['rows' => 5]),
@@ -287,7 +292,7 @@ function schema_sections(): array {
     /* ------------------------------------------------------------------ */
     'projectpage' => ['title' => 'Proje Sayfaları (ortak)', 'icon' => 'cam', 'intro' => 'Projeler sayfası, ana sayfadaki "Recent Projects" bölümü ve her proje sayfasındaki ortak yazılar. {project} = proje adı, {summary} = özet, {service} = hizmet.', 'fields' => [
         HD('Projeler sayfası (projects.html)'),
-        F('pages.projects.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.projects.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']),
+        F('pages.projects.seo_title', 'text', 'SEO başlığı', ['req' => true, 'seo' => 'title']), F('pages.projects.seo_description', 'textarea', 'Meta açıklama', ['req' => true, 'rows' => 3, 'seo' => 'desc']), seo_kp_field('pages.projects.seo_keyphrase'),
         F('pages.projects.title', 'text', 'Başlık (H1)', ['req' => true]), F('pages.projects.lead', 'textarea', 'Alt yazı', ['rows' => 2]),
         F('pages.projects.eyebrow', 'text', 'Üst etiket'), F('pages.projects.list_title', 'text', 'Liste başlığı'), F('pages.projects.list_text', 'text', 'Liste açıklaması'),
         F('pages.projects.card_button', 'text', 'Kart bağlantı yazısı'),
@@ -339,9 +344,10 @@ function schema_service(): array {
         F('included', 'lines', 'Neler dahil (her satıra bir)', ['rows' => 6]),
         F('signs', 'lines', 'Bu hizmete ihtiyacınız olduğunun işaretleri (her satıra bir)', ['rows' => 4]),
         F('closing', 'text', 'Kapanış cümlesi'),
-        HD('SEO (boş bırakılırsa otomatik)'),
+        HD('SEO (boş bırakılırsa otomatik)', 'Google önizlemesi, öneriler ve fotoğrafların dosya adları için: Araçlar → SEO Paneli.'),
         F('seo_title', 'text', 'SEO başlığı', ['seo' => 'title']),
         F('seo_description', 'textarea', 'Meta açıklama', ['rows' => 2, 'seo' => 'desc']),
+        seo_kp_field('seo_keyphrase', true),
     ];
 }
 function schema_city(): array {
@@ -354,9 +360,10 @@ function schema_city(): array {
         F('lat', 'number', 'Enlem', ['req' => true, 'h' => 'Yakın bölgeleri bulmak için. Google Maps\'te sağ tık → koordinat.']),
         F('lng', 'number', 'Boylam', ['req' => true]),
         F('image', 'image', 'Fotoğraf', ['kind' => 'photo']),
-        HD('SEO (boş bırakılırsa otomatik)'),
+        HD('SEO (boş bırakılırsa otomatik)', 'Google önizlemesi, öneriler ve fotoğrafların dosya adları için: Araçlar → SEO Paneli.'),
         F('seo_title', 'text', 'SEO başlığı', ['seo' => 'title']),
         F('seo_description', 'textarea', 'Meta açıklama', ['rows' => 2, 'seo' => 'desc']),
+        seo_kp_field('seo_keyphrase', true),
     ];
 }
 function schema_project(): array {
@@ -376,8 +383,9 @@ function schema_project(): array {
         HD('Detaylar'),
         F('description', 'textarea', 'Proje açıklaması', ['rows' => 7, 'h' => 'Paragrafları boş satırla ayırın.']),
         F('highlights', 'lines', 'Yapılanlar (her satıra bir)', ['rows' => 5]),
-        HD('SEO (boş bırakılırsa otomatik)'),
+        HD('SEO (boş bırakılırsa otomatik)', 'Google önizlemesi, öneriler ve fotoğrafların dosya adları için: Araçlar → SEO Paneli.'),
         F('seo_title', 'text', 'SEO başlığı', ['seo' => 'title']),
         F('seo_description', 'textarea', 'Meta açıklama', ['rows' => 2, 'seo' => 'desc']),
+        seo_kp_field('seo_keyphrase', true),
     ];
 }

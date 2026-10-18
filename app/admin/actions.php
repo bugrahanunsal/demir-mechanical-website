@@ -273,51 +273,6 @@ function act_upload(): never {
     }
 }
 
-/* ---------------- SEO panel ---------------- */
-function back_to_seo(string $path, string $msg, string $kind = 'ok'): never {
-    flash_set($msg, $kind);
-    header('Location: index.php?p=seo&open=' . rawurlencode($path) . '#' . preg_replace('/\W/', '-', $path), true, 303);
-    exit;
-}
-function act_seo_save(): never {
-    $c = C();
-    $path = (string)($_POST['path'] ?? '');
-    if ($path === '_site') {
-        foreach (['logo_alt' => 'branding.header_logo_alt', 'flogo_alt' => 'branding.footer_logo_alt'] as $in => $p)
-            if (isset($_POST[$in]) && one_line((string)$_POST[$in]) !== '') path_set($c, $p, one_line((string)$_POST[$in]));
-    } else {
-        $src = page_source($path, $c);
-        if ($src && isset($_POST['title'], $_POST['desc'])) {
-            $t = one_line((string)$_POST['title']); $d = one_line((string)$_POST['desc']);
-            if (!$src['auto'] && ($t === '' || $d === '')) back_to_seo($path, 'Bu sayfanın SEO başlığı ve açıklaması boş bırakılamaz.', 'bad');
-            path_set($c, $src['tpath'], $t); path_set($c, $src['dpath'], $d);
-        }
-        $files = is_array($_POST['altf'] ?? null) ? $_POST['altf'] : [];
-        foreach (is_array($_POST['alt'] ?? null) ? $_POST['alt'] : [] as $j => $alt) {
-            $file = clean_file($files[$j] ?? '');
-            if ($file === '') continue;
-            foreach (alt_paths($c, $file) as $p) {
-                if (is_array(path_get($c, $p))) path_set($c, $p . '.alt', one_line((string)$alt));
-                elseif (one_line((string)$alt) !== '') path_set($c, $p, one_line((string)$alt));
-            }
-        }
-    }
-    $rep = content_save($c, 'SEO: /' . ($path === 'index.html' ? '' : $path));
-    back_to_seo($path, save_msg($rep));
-}
-function act_seo_rename(): never {
-    $c = C();
-    $file = clean_file((string)($_POST['file'] ?? ''));
-    $back = (string)($_POST['back'] ?? '');
-    if ($file === '' || !preg_match('#^assets/(photos|uploads)/#', $file) || !image_refs($c, $file)) back_to_seo($back, 'Bu dosyanın adı buradan değiştirilemez.', 'bad');
-    try { $new = image_rename($file, one_line((string)($_POST['name'] ?? ''))); }
-    catch (\RuntimeException $e) { back_to_seo($back, e($e->getMessage()), 'bad'); }
-    if ($new === $file) back_to_seo($back, 'Dosya adı zaten bu.');
-    $c = replace_file_refs($c, $file, $new);
-    $rep = content_save($c, 'Dosya adı: ' . basename($new));
-    back_to_seo($back, save_msg($rep, 'Dosya adı değişti: ' . basename($new)));
-}
-
 /* ---------------- backups ---------------- */
 function backup_file(string $name): string {
     if (!preg_match('/^content-\d{8}-\d{6}-[0-9a-f]{4,6}(-[0-9a-f]{4})?\.json$/', $name) || !is_file(DM_BACKUPS . '/' . $name)) redirect(['p' => 'backups'], 'Yedek bulunamadı.', 'bad');

@@ -27,7 +27,7 @@ Panel adresi: **https://demirmechanical.com/admin/**
 | Müşteri yorumları | İçerik → Yorumlar |
 | Sık sorulan sorular | İçerik → Sık Sorulan Sorular |
 | Her sayfanın yazıları ve fotoğrafları | Sayfalar → … |
-| Google başlıkları, açıklamalar, fotoğraf adları ve alt metinleri | Araçlar → SEO Paneli |
+| Google başlıkları, açıklamalar, anahtar kelimeler, paylaşım görselleri, fotoğraf adları ve alt metinleri (Google önizlemesi, öneriler, SEO kontrolü) | Araçlar → SEO Paneli → Düzenle |
 | Bir değişikliği geri almak, yedek indirmek | Araçlar → Yedekler |
 | Şifre değiştirme | Araçlar → Hesap & Güvenlik |
 | Geliştirici için özel CSS / JavaScript / takip kodları | Araçlar → Özel Kod |
