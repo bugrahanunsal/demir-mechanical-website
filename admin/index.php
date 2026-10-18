@@ -33,6 +33,15 @@ try {
         if ($method === 'POST' && $a === 'setup' && origin_ok()) act_setup();
         out('Kurulum', '', view_setup('', setup_mail_secret() !== ''), false);
     }
+    // "Şifremi unuttum": works with or without a session (the emailed link is the proof)
+    if ($p === 'forgot' || $p === 'reset' || ($method === 'POST' && ($a === 'forgot' || $a === 'reset'))) {
+        if ($method === 'POST' && !origin_ok()) redirect(['p' => 'forgot']);
+        if ($method === 'POST' && $a === 'forgot') act_forgot();
+        if ($method === 'POST' && $a === 'reset') act_reset();
+        if ($p === 'forgot') out('Şifremi unuttum', '', view_forgot(), false);
+        $t = (string)($_GET['t'] ?? '');
+        out('Şifre sıfırlama', '', reset_valid($t) ? view_reset($t) : view_reset_bad(), false, reset_valid($t) ? 200 : 400);
+    }
     if (!$GLOBALS['DM_SESSION']) {
         if ($method === 'POST' && $a === 'login' && origin_ok()) act_login();
         if ($method === 'POST' && wants_json()) json_out(['ok' => false, 'error' => 'Oturum kapanmış. Sayfayı yenileyip tekrar giriş yapın.'], 401);
@@ -46,7 +55,7 @@ try {
             redirect([], $m, 'bad');
         }
         csrf_require();
-        $acts = ['logout' => 'act_logout', 'logout_all' => 'act_logout_all', 'password' => 'act_password', 'hook_key' => 'act_hook_key',
+        $acts = ['logout' => 'act_logout', 'logout_all' => 'act_logout_all', 'password' => 'act_password', 'recovery_email' => 'act_recovery_email', 'hook_key' => 'act_hook_key',
                  'save_sec' => 'act_save_sec', 'save_item' => 'act_save_item', 'delete' => 'act_delete', 'move' => 'act_move', 'preview' => 'act_preview',
                  'upload' => 'act_upload', 'seo_save' => 'act_seo_save', 'seo_check' => 'act_seo_check', 'seo_suggest' => 'act_seo_suggest', 'media_save' => 'act_media_save', 'media_add' => 'act_media_add', 'media_delete' => 'act_media_delete',
                  'invoice_save' => 'act_invoice_save', 'invoice_pdf' => 'act_invoice_pdf', 'invoice_copy' => 'act_invoice_copy', 'invoice_delete' => 'act_invoice_delete',

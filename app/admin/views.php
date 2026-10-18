@@ -144,8 +144,8 @@ function head_block(string $title, string $intro = '', string $actions = ''): st
 
 /* ---------------- setup & login ---------------- */
 /** Password field with a show / hide button (admin.js: data-pw-toggle). */
-function pw_field(string $label, string $name, string $more = ''): string {
-    return '<label class="auth-fld"><span>' . e($label) . '</span><span class="pw-wrap"><input type="password" name="' . e($name) . '"' . $more . '>'
+function pw_field(string $label, string $name, string $more = '', string $aside = ''): string {
+    return '<label class="auth-fld"><span class="auth-lrow"><span>' . e($label) . '</span>' . $aside . '</span><span class="pw-wrap"><input type="password" name="' . e($name) . '"' . $more . '>'
         . '<button type="button" class="pw-eye" data-pw-toggle aria-label="Şifreyi göster" title="Şifreyi göster">' . aic('eye') . '</button></span></label>';
 }
 function view_setup(string $err, bool $mailMode): string {
@@ -165,9 +165,9 @@ function view_login(string $err, int $blocked): string {
     if ($blocked > 0) $o .= '<div class="flash bad">' . ic('alert') . '<div>Çok fazla hatalı deneme. ' . $blocked . ' dakika sonra tekrar deneyin.</div></div>';
     elseif ($err !== '') $o .= '<div class="flash bad">' . ic('alert') . '<div>' . e($err) . '</div></div>';
     return $o . '<form method="post" class="authf"><input type="hidden" name="a" value="login">'
-        . pw_field('Şifre', 'pw', ' required autofocus autocomplete="current-password"')
+        . pw_field('Şifre', 'pw', ' required autofocus autocomplete="current-password"', '<a class="auth-link" href="index.php?p=forgot">Şifremi unuttum</a>')
         . '<button type="submit" class="btn primary wide auth-btn"><span>Giriş yap</span>' . ic('arrow') . '</button></form>'
-        . '<details class="auth-forgot"><summary>Şifremi unuttum</summary><p>Hostinger → Dosya Yöneticisi → public_html → <b>data/admin-auth.php</b> dosyasını silin ve bu sayfayı yenileyin. Kurulum ekranı açılır ve yeni şifre belirlersiniz; site içeriği silinmez.</p></details>';
+        . '<p class="auth-help">Şifrenizi hatırlamıyorsanız <a href="index.php?p=forgot">sıfırlama bağlantısı</a> isteyin; kayıtlı e-posta adresine gönderilir.</p>';
 }
 
 /* ---------------- dashboard ---------------- */
@@ -366,6 +366,13 @@ function view_account(string $err): string {
         . '<button type="submit" class="btn primary">Şifreyi değiştir</button></form><p class="muted small">Şifre değişince diğer tüm cihazlardaki oturumlar kapanır.</p></section>'
         . '<section class="card"><h2>' . aic('logout') . ' Oturumlar</h2><p class="muted">Panel bu cihazda ' . DM_SESSION_DAYS . ' gün açık kalır. Telefonunuzu kaybettiyseniz veya başka bir bilgisayarda giriş yaptıysanız tüm oturumları kapatın.</p>'
         . post_btn(['a' => 'logout_all'], aic('logout') . '<span>Tüm cihazlardan çıkış yap</span>', 'btn', 'Tüm cihazlardaki oturumlar kapanacak (bu cihaz dahil). Devam edilsin mi?') . '</section></div>';
+    $rec = recovery_email($a);
+    $o .= '<section class="card"><h2>' . ic('mail') . ' Şifre kurtarma e-postası</h2><p class="muted">Giriş ekranındaki "Şifremi unuttum" bağlantısı bu adrese gönderilir. '
+        . ($rec !== '' ? 'Şu an: <b>' . e($rec) . '</b>' . (trim((string)($a['email'] ?? '')) === '' ? ' (form-config.php\'deki adres)' : '') . '.' : '<b class="warn">Şu an kayıtlı adres yok.</b>') . ' Sadece sizin erişebildiğiniz bir adres yazın.</p>'
+        . '<form method="post" class="authf rec-form">' . csrf_field() . '<input type="hidden" name="a" value="recovery_email">'
+        . '<label>E-posta adresi<input type="email" name="email" value="' . e((string)($a['email'] ?? '')) . '" placeholder="' . e((string)mail_config()['to']) . '" autocomplete="email"></label>'
+        . '<label>Mevcut panel şifresi<input type="password" name="rcur" required autocomplete="current-password"></label>'
+        . '<button type="submit" class="btn primary">Kaydet</button></form></section>';
     $checks = [
         ['PHP sürümü', PHP_VERSION, version_compare(PHP_VERSION, '8.1', '>=')],
         ['Fotoğraf işleme (GD + WebP)', function_exists('imagewebp') ? 'var' : 'yok', function_exists('imagewebp')],

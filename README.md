@@ -112,7 +112,11 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
   drop them (`header_remove`): downloads drop the CSP, invoice PDFs also `X-Frame-Options` so the browser's PDF viewer can show
   them. Both still need the login.
 * Uploads are re-encoded by GD (no original bytes are kept), stored under generated names.
-* Forgot the password? Delete `data/admin-auth.php` in the file manager and open `/admin/` again.
+* Forgot the password? "Şifremi unuttum" on the sign-in page (`app/admin/recovery.php`) emails a one-time link (30 min, single use,
+  only its sha256 is stored in `data/admin-auth.php`) to the recovery address (Hesap & Güvenlik; default: `to` in form-config.php),
+  sent with the form mailer settings (SMTP or `mail()`). The link always uses `site.url`, never the request's Host header. Setting
+  the new password rotates the signing key (all sessions end). Rate limits: 5 requests/hour, 1 email per minute, 10 bad tokens/15 min.
+  Without email: delete `data/admin-auth.php` in the file manager and open `/admin/` again.
 
 ## Local development
 
@@ -131,7 +135,7 @@ php _dev/build.php --out=.  && php -S 127.0.0.1:8080 -t . _dev/router.php
 Tests:
 
 ```bash
-python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~315 checks, ~6 min)
+python3 _dev/tests/e2e_admin.py      # full admin panel run on a throw-away copy (~330 checks, ~6 min)
 python3 _dev/tests/site_features.py  # WhatsApp / Analytics / social links in the generated pages
 python3 _dev/tests/parity.py A B     # compare two built sites page by page (normalised)
 ```

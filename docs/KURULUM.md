@@ -67,8 +67,10 @@ Site Ayarları → WhatsApp & Bağlantılar → "Google Analytics 4 ölçüm kim
 Ziyaretler, telefon tıklamaları, WhatsApp ve form gönderimleri ölçülmeye başlar.
 
 ## 3. Şifremi unuttum
-Dosya Yöneticisi → `public_html/data/admin-auth.php` dosyasını silin → /admin/ adresini açın → kurulum yeniden açılır
-(içerik ve sayfalar etkilenmez).
+Giriş ekranında **Şifremi unuttum** → **Sıfırlama bağlantısı gönder**. Kayıtlı e-postaya (Hesap & Güvenlik → Şifre kurtarma
+e-postası; ayarlanmadıysa info@demirmechanical.com) 30 dakika geçerli bir bağlantı gelir; bağlantıdan yeni şifreyi belirleyin.
+E-postaya ulaşamıyorsanız: Dosya Yöneticisi → `public_html/data/admin-auth.php` dosyasını silin → /admin/ adresini açın → kurulum
+yeniden açılır (içerik ve sayfalar etkilenmez).
 
 ## 4. Siteyi bir geliştiriciye devretmek
 - **Kod:** GitHub deposu `bugrahanunsal/demir-mechanical-website` (geliştiriciyi depoya ekleyin veya depoyu devredin).

@@ -9,7 +9,7 @@ mailbox password and an old site-links.js), starts `php -S` with _dev/router.php
 setup, login + rate limit, CSRF, every editor, uploads (logo, photos, project gallery), projects + photo viewer,
 SEO panel, backups/restore/import/downloads, preview, password change, version rebuild, deploy hook, access rules.
 """
-import datetime, hashlib, io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, zipfile, urllib.request, urllib.error, urllib.parse
+import datetime, email, hashlib, io, json, os, re, shutil, signal, socket, socketserver, subprocess, sys, tempfile, threading, time, zipfile, urllib.request, urllib.error, urllib.parse
 from PIL import Image, ImageDraw
 from playwright.sync_api import sync_playwright
 from zoneinfo import ZoneInfo
@@ -178,8 +178,10 @@ def t_login_look(pn, P):
     check(pw.get_attribute('type') == 'text' and g.locator('[data-pw-toggle]').get_attribute('aria-label') == 'Şifreyi gizle', 'sign-in page: the eye button shows the password')
     g.click('[data-pw-toggle]')
     check(pw.get_attribute('type') == 'password', 'sign-in page: and hides it again')
+    check(g.locator('a.auth-link[href="index.php?p=forgot"]').is_visible(), 'sign-in page: "Şifremi unuttum" link next to the password')
+    with g.expect_navigation(): g.click('a.auth-link')
     g.click('.auth-forgot summary')
-    check('admin-auth.php' in g.locator('.auth-forgot').inner_text(), 'sign-in page: "Şifremi unuttum" explains the reset')
+    check('admin-auth.php' in g.locator('.auth-forgot').inner_text() and g.locator('.auth-badge').is_visible(), 'reset page: also explains the way without email')
     ctx.close()
     m = pn.p.context.browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
     g = m.new_page(); g.goto(ADMIN); g.wait_for_load_state()
@@ -1146,6 +1148,86 @@ def t_account(pn, P):
     other.context.close()
     p.fill('[name=pw]', PW2); p.click('button[type=submit]'); p.wait_for_load_state()
 
+MAILS = []
+class SmtpStub(socketserver.StreamRequestHandler):
+    """A tiny mail server for the tests: accepts everything, keeps each message in MAILS."""
+    def handle(self):
+        w = lambda s: (self.wfile.write((s + '\r\n').encode()), self.wfile.flush())
+        w('220 stub ready')
+        data, buf = False, []
+        while True:
+            raw = self.rfile.readline()
+            if not raw: break
+            line = raw.decode('utf-8', 'replace').rstrip('\r\n')
+            if data:
+                if line == '.': data = False; MAILS.append('\n'.join(buf)); buf = []; w('250 queued')
+                else: buf.append(line[1:] if line.startswith('..') else line)
+                continue
+            u = line.upper()
+            if u.startswith('EHLO'): w('250-stub'); w('250-AUTH PLAIN LOGIN'); w('250 8BITMIME')
+            elif u.startswith('AUTH LOGIN'): w('334 VXNlcm5hbWU6'); self.rfile.readline(); w('334 UGFzc3dvcmQ6'); self.rfile.readline(); w('235 ok')
+            elif u == 'AUTH PLAIN': w('334 '); self.rfile.readline(); w('235 ok')
+            elif u.startswith('AUTH'): w('235 ok')
+            elif u == 'DATA': w('354 go ahead'); data = True
+            elif u == 'QUIT': w('221 bye'); break
+            else: w('250 ok')
+
+def mail_text(raw):
+    m = email.message_from_string(raw)
+    for part in m.walk():
+        if part.get_content_type() == 'text/plain': return part.get_payload(decode=True).decode('utf-8', 'replace'), m
+    return '', m
+
+def t_reset(pn, P):
+    # "Şifremi unuttum": a one-time link by email, a new password, old sessions end
+    p = pn.p
+    srv = socketserver.ThreadingTCPServer(('127.0.0.1', 0), SmtpStub); srv.daemon_threads = True
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    cfg = os.path.join(SITE, 'form-config.php'); orig = open(cfg).read()
+    open(cfg, 'w').write("<?php\nreturn ['to' => 'info@demirmechanical.com', 'from' => 'info@demirmechanical.com', 'smtp_password' => '%s', 'smtp_host' => '127.0.0.1', 'smtp_port' => %d, 'smtp_secure' => ''];\n" % (MAILPW, srv.server_address[1]))
+    try:
+        ctx = p.context.browser.new_context(viewport={'width': 1280, 'height': 860}); g = ctx.new_page()
+        g.goto(ADMIN); g.wait_for_load_state()
+        with g.expect_navigation(): g.click('a.auth-link:has-text("Şifremi unuttum")')
+        check(g.locator('h1').inner_text() == 'Şifrenizi mi unuttunuz?' and 'in•••@demirmechanical.com' in g.locator('.auth-mail').inner_text(), '"Şifremi unuttum" opens the reset page with the (masked) recovery address')
+        with g.expect_navigation(): g.click('button:has-text("Sıfırlama bağlantısı gönder")')
+        h1 = g.locator('h1').inner_text(); fl = g.locator('.flash').all_inner_texts()
+        check(h1 == 'E-postanızı kontrol edin' and g.locator('[data-countdown]').is_disabled(), f'link sent; "send again" waits a minute ({h1} {fl})')
+        check(wait_until(g, lambda: len(MAILS) == 1, 10), 'reset email delivered')
+        text, msg = mail_text(MAILS[0])
+        link = re.search(r'https://demirmechanical\.com/admin/index\.php\?p=reset&t=([A-Za-z0-9_\-]+)', text)
+        check(link and 'info@demirmechanical.com' in msg['To'] and '30 dakika' in text, 'email has a link to the site\'s own address, valid 30 minutes')
+        tok = link.group(1) if link else 'x'
+        g.goto(ADMIN + 'index.php?p=reset&t=' + tok); g.wait_for_load_state()
+        check(g.locator('h1').inner_text() == 'Yeni şifre belirleyin', 'the link opens the new password page')
+        g.fill('[name=pw]', 'Reset-Pass-2026z'); g.fill('[name=pw2]', 'Reset-Pass-2026q')
+        with g.expect_navigation(): g.click('button[type=submit]')
+        check('aynı değil' in g.locator('.flash').inner_text(), 'mismatched passwords refused')
+        g.fill('[name=pw]', PW2); g.fill('[name=pw2]', PW2)
+        with g.expect_navigation(): g.click('button[type=submit]')
+        check(g.locator('h1').inner_text() == 'Hoş geldiniz' and 'yenilendi' in g.locator('.flash').inner_text(), 'new password saved, signed in')
+        pn.go('dash')
+        check(p.locator('h1').inner_text() == 'Tekrar hoş geldiniz', 'other sessions ended')
+        p.fill('[name=pw]', PW2); p.click('button[type=submit]'); p.wait_for_load_state()
+        check(p.locator('h1').inner_text() == 'Hoş geldiniz', 'login with the new password')
+        g.goto(ADMIN + 'index.php?p=reset&t=' + tok); g.wait_for_load_state()
+        check(g.locator('h1').inner_text() == 'Bağlantı geçersiz', 'the link works only once')
+        g.goto(ADMIN + 'index.php?p=reset&t=' + 'A' * 43); g.wait_for_load_state()
+        check(g.locator('h1').inner_text() == 'Bağlantı geçersiz', 'a made-up link is refused')
+        ctx.close()
+        # the recovery address can be changed in Hesap & Güvenlik
+        pn.go('account')
+        p.fill('[name=email]', 'owner@example.com'); p.fill('[name=rcur]', 'wrong')
+        with p.expect_navigation(): p.click('button:has-text("Kaydet")')
+        check('yanlış' in pn.flash(), 'recovery address needs the current password')
+        p.fill('[name=email]', 'owner@example.com'); p.fill('[name=rcur]', PW2)
+        with p.expect_navigation(): p.click('button:has-text("Kaydet")')
+        check('owner@example.com' in pn.flash() and json.loads(rd('data/admin-auth.php').split('\n', 1)[1])['email'] == 'owner@example.com', 'recovery address saved')
+        st, body = http('/admin/index.php?p=forgot')
+        check('ow••••@example.com' in body and 'owner@example.com' not in body, 'reset page shows the new address, masked')
+    finally:
+        open(cfg, 'w').write(orig); srv.shutdown()
+
 def t_mobile(pn, P, browser):
     ctx = browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, device_scale_factor=2)
     m = ctx.new_page()
@@ -1194,7 +1276,7 @@ def t_parity(pn, P):
 
 TESTS = [('setup', t_setup), ('login', t_login), ('login_look', t_login_look), ('security', t_security), ('business', t_business), ('menu', t_menu), ('branding', t_branding),
          ('services', t_services), ('cities', t_cities), ('projects', t_projects), ('reviews_faq', t_reviews_faq), ('seo', t_seo),
-         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('custom', t_custom), ('theme', t_theme), ('media', t_media), ('invoices', t_invoices), ('version', t_version_rebuild), ('account', t_account),
+         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('custom', t_custom), ('theme', t_theme), ('media', t_media), ('invoices', t_invoices), ('version', t_version_rebuild), ('account', t_account), ('reset', t_reset),
          ('mobile', t_mobile), ('parity', t_parity)]
 
 def main():

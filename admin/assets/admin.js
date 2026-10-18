@@ -1077,6 +1077,32 @@
     });
   });
 
+  /* ---------- sign-in pages: resend countdown, password strength ---------- */
+  $$('[data-countdown]').forEach(function (b) {
+    var n = +b.getAttribute('data-countdown') || 0, sp = b.querySelector('span'), label = sp ? sp.textContent : '';
+    if (!n || !sp) return;
+    b.disabled = true;
+    var t = setInterval(function () {
+      n--; sp.textContent = n > 0 ? label + ' (' + n + ' sn)' : label;
+      if (n <= 0) { clearInterval(t); b.disabled = false; }
+    }, 1000);
+    sp.textContent = label + ' (' + n + ' sn)';
+  });
+  $$('[data-pw-meter]').forEach(function (inp) {
+    var m = $('.pw-meter'), t = $('.pw-meter-t');
+    if (!m) return;
+    inp.addEventListener('input', function () {
+      var v = inp.value, s = 0;
+      if (v.length >= 10) s++;
+      if (v.length >= 14) s++;
+      if (/[a-zğüşıöç]/.test(v) && /[A-ZĞÜŞİÖÇ]/.test(v)) s++;
+      if (/\d/.test(v) && /[^A-Za-z0-9ğüşıöçĞÜŞİÖÇ]/.test(v)) s++;
+      if (v.length < 10) s = v ? 1 : 0;
+      m.setAttribute('data-s', String(Math.min(4, s)));
+      if (t) t.textContent = !v ? '' : v.length < 10 ? 'En az 10 karakter (' + v.length + '/10)' : ['', 'Zayıf', 'Orta', 'İyi', 'Güçlü'][Math.min(4, s)];
+    });
+  });
+
   /* ---------- small things ---------- */
   $$('.flash.ok').forEach(function (fl) { setTimeout(function () { fl.style.transition = 'opacity .4s'; fl.style.opacity = '0'; setTimeout(function () { fl.remove(); }, 450); }, 9000); });
   $$('.rep-item').forEach(syncTitle);
