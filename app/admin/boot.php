@@ -13,7 +13,7 @@ mb_internal_encoding('UTF-8');
 ini_set('display_errors', '0');
 
 require DM_APP . '/pages.php';
-foreach (['core', 'store', 'images', 'schema', 'forms', 'views', 'actions', 'seo'] as $f) require __DIR__ . '/' . $f . '.php';
+foreach (['core', 'store', 'images', 'schema', 'forms', 'views', 'actions', 'seo', 'media', 'pdf', 'invoices'] as $f) require __DIR__ . '/' . $f . '.php';
 
 security_headers();
 try {

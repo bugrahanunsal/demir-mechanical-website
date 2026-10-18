@@ -14,9 +14,14 @@ function icons_head(): string {
     $b = C()['branding'];
     return '<link rel="icon" type="image/png" sizes="32x32" href="' . t($b['favicon_32']) . '"><link rel="icon" type="image/png" sizes="48x48" href="' . t($b['favicon_48']) . '"><link rel="apple-touch-icon" href="' . t($b['apple_touch_icon']) . '"><meta name="theme-color" content="' . t(cget('site.theme_color', '#ffffff')) . '">';
 }
-function css(): string { return theme('style.html'); }
+/** The site's own CSS, or the owner's edited copy of it (Araçlar → Özel Kod → Sitenin kendi kodu). */
+function css(): string {
+    $o = custom_on() ? trim((string)cget('custom.theme_css')) : '';
+    return $o !== '' ? "<style>\n" . str_ireplace('</style', '<\/style', $o) . "\n</style>" : theme('style.html');
+}
 function scripts(): string {
-    return strtr(theme('script.html'), ['__SITE__' => site_url(), '__GA4__' => preg_match('/^G-[A-Z0-9]{4,}$/i', (string)cget('links.ga4')) ? (string)cget('links.ga4') : '']);
+    $o = custom_on() ? trim((string)cget('custom.theme_js')) : '';
+    return strtr($o !== '' ? $o : theme('script.html'), ['__SITE__' => site_url(), '__GA4__' => preg_match('/^G-[A-Z0-9]{4,}$/i', (string)cget('links.ga4')) ? (string)cget('links.ga4') : '']);
 }
 
 /* ---------------- shared pieces ---------------- */

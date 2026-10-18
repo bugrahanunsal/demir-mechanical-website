@@ -30,6 +30,9 @@ function aic(string $k): string {
         'sliders' => '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
         'undo' => '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
         'code' => '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+        'lock' => '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+        'eye-off' => '<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.2A10 10 0 0 1 12 4c6.4 0 10 8 10 8a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/>',
+        'receipt' => '<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
     ];
     if (isset($extra[$k])) return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $extra[$k] . '</svg>';
     return str_replace('<svg ', '<svg aria-hidden="true" ', ic($k));
@@ -79,7 +82,8 @@ function nav_groups(): array {
     $sec = fn(string $k, string $icon = '') => ['sec&s=' . $k, $S[$k]['title'], $icon !== '' ? $icon : $S[$k]['icon']];
     return [
         ['', [['dash', 'Panel', 'grid']]],
-        ['İçerik', [['list&k=services', 'Hizmetler', 'wrench'], ['list&k=cities', 'Bölgeler', 'pin'], ['list&k=projects', 'Projeler', 'folder'], $sec('reviews', 'star'), $sec('faq')]],
+        ['İçerik', [['list&k=services', 'Hizmetler', 'wrench'], ['list&k=cities', 'Bölgeler', 'pin'], ['list&k=projects', 'Projeler', 'folder'], ['media', 'Galeri', 'image'], $sec('reviews', 'star'), $sec('faq')]],
+        ['İşletme', [['invoices', 'Faturalar', 'receipt'], $sec('invoicing')]],
         ['Sayfalar', [$sec('home'), $sec('about'), $sec('contactpage'), $sec('founder'), $sec('servicepage'), $sec('areapage'), $sec('projectpage'), $sec('blocks', 'layers'), $sec('notfound')]],
         ['Site Ayarları', [$sec('business'), $sec('branding', 'image'), $sec('menu', 'menu'), $sec('links'), $sec('suppliers')]],
         ['Araçlar', [['seo', 'SEO Paneli', 'search'], $sec('custom', 'code'), ['backups', 'Yedekler', 'archive'], ['account', 'Hesap & Güvenlik', 'key']]],
@@ -99,7 +103,16 @@ function out(string $title, string $active, string $main, bool $authed = true, i
         . '<link rel="icon" href="' . $fav . '"><link rel="stylesheet" href="assets/admin.css?v=' . DM_VERSION . '">'
         . '<script src="assets/admin.js?v=' . DM_VERSION . '" defer></script></head>';
     if (!$authed) {
-        echo '<body class="auth"><main class="auth-box"><div class="auth-brand">' . admin_logo() . '<span>Yönetim Paneli</span></div>' . $fl . $main . '</main></body></html>';
+        $hero = (string)cget('pages.home.hero_image.file');
+        $light = (string)cget('branding.footer_logo');                       // light logo, made for dark backgrounds
+        echo '<body class="auth"><div class="auth-wrap"><aside class="auth-art">'
+            . ($hero !== '' && is_file(DM_ROOT . '/' . $hero) ? '<img class="auth-bg" src="../' . e($hero) . '" alt="">' : '')
+            . '<div class="auth-art-in"><a class="auth-home" href="../" title="Siteyi aç">' . ($light !== '' && is_file(DM_ROOT . '/' . $light) ? '<img class="auth-logo" src="../' . e($light) . '" alt="' . e(brand()) . '">' : '<b class="auth-word">' . e(short_name()) . '</b>') . '</a>'
+            . '<div class="auth-copy"><span class="auth-kicker">Yönetim Paneli</span><h2>Sitenizi tek yerden yönetin.</h2>'
+            . '<p>Hizmetler, projeler, fotoğraflar, SEO ve faturalar. Kaydettiğiniz her değişiklik anında yayında.</p></div>'
+            . '<div class="auth-meta"><span>' . e((string)cget('site.legal_name')) . '</span><span>' . e((string)preg_replace('#^https?://#', '', site_url())) . '</span></div></div></aside>'
+            . '<main class="auth-main"><div class="auth-box">' . $fl . $main . '</div>'
+            . '<p class="auth-secure">' . aic('lock') . '<span>Şifreli bağlantı · Giriş bu cihazda ' . DM_SESSION_DAYS . ' gün açık kalır</span></p></main></div></body></html>';
         exit;
     }
     $nav = '';
@@ -130,26 +143,31 @@ function head_block(string $title, string $intro = '', string $actions = ''): st
 }
 
 /* ---------------- setup & login ---------------- */
+/** Password field with a show / hide button (admin.js: data-pw-toggle). */
+function pw_field(string $label, string $name, string $more = ''): string {
+    return '<label class="auth-fld"><span>' . e($label) . '</span><span class="pw-wrap"><input type="password" name="' . e($name) . '"' . $more . '>'
+        . '<button type="button" class="pw-eye" data-pw-toggle aria-label="Şifreyi göster" title="Şifreyi göster">' . aic('eye') . '</button></span></label>';
+}
 function view_setup(string $err, bool $mailMode): string {
-    $o = '<h1>Paneli kurun</h1><p class="muted">İlk kurulum: panelin şifresini belirleyin. Bu işlem bir kez yapılır.</p>';
+    $o = '<span class="auth-step">İlk kurulum</span><h1 class="auth-h">Paneli kurun</h1><p class="auth-sub">Panelin şifresini belirleyin. Bu işlem bir kez yapılır.</p>';
     if ($err !== '') $o .= '<div class="flash bad">' . ic('alert') . '<div>' . e($err) . '</div></div>';
     $o .= '<form method="post" class="authf" autocomplete="off">' . '<input type="hidden" name="a" value="setup">';
-    if ($mailMode) $o .= '<label>info@ e-posta hesabının şifresi<input type="password" name="proof" required autocomplete="off"></label><p class="help">Güvenlik için: sunucudaki <b>form-config.php</b> dosyasına yazdığınız e-posta şifresi. Bu sayede paneli sadece site sahibi kurabilir.</p>';
-    else $o .= '<label>Kurulum kodu<input type="text" name="proof" required autocomplete="off" spellcheck="false"></label><p class="help">Hostinger → Dosya Yöneticisi → public_html → <b>data/setup-code.txt</b> dosyasını açın ve içindeki kodu buraya yazın.</p>';
-    $o .= '<label>Yeni panel şifresi<input type="password" name="pw" required minlength="10" autocomplete="new-password"></label>'
-        . '<label>Yeni şifre (tekrar)<input type="password" name="pw2" required minlength="10" autocomplete="new-password"></label>'
+    if ($mailMode) $o .= pw_field('info@ e-posta hesabının şifresi', 'proof', ' required autocomplete="off"') . '<p class="help">Güvenlik için: sunucudaki <b>form-config.php</b> dosyasına yazdığınız e-posta şifresi. Bu sayede paneli sadece site sahibi kurabilir.</p>';
+    else $o .= '<label class="auth-fld"><span>Kurulum kodu</span><input type="text" name="proof" required autocomplete="off" spellcheck="false"></label><p class="help">Hostinger → Dosya Yöneticisi → public_html → <b>data/setup-code.txt</b> dosyasını açın ve içindeki kodu buraya yazın.</p>';
+    $o .= pw_field('Yeni panel şifresi', 'pw', ' required minlength="10" autocomplete="new-password"')
+        . pw_field('Yeni şifre (tekrar)', 'pw2', ' required minlength="10" autocomplete="new-password"')
         . '<p class="help">En az 10 karakter. E-posta şifresinden farklı bir şifre seçin.</p>'
-        . '<button type="submit" class="btn primary wide">Kurulumu tamamla</button></form>';
+        . '<button type="submit" class="btn primary wide auth-btn"><span>Kurulumu tamamla</span>' . ic('arrow') . '</button></form>';
     return $o;
 }
 function view_login(string $err, int $blocked): string {
-    $o = '<h1>Giriş</h1>';
+    $o = '<h1 class="auth-h">Tekrar hoş geldiniz</h1><p class="auth-sub">Devam etmek için panel şifrenizi girin.</p>';
     if ($blocked > 0) $o .= '<div class="flash bad">' . ic('alert') . '<div>Çok fazla hatalı deneme. ' . $blocked . ' dakika sonra tekrar deneyin.</div></div>';
     elseif ($err !== '') $o .= '<div class="flash bad">' . ic('alert') . '<div>' . e($err) . '</div></div>';
     return $o . '<form method="post" class="authf"><input type="hidden" name="a" value="login">'
-        . '<label>Şifre<input type="password" name="pw" required autofocus autocomplete="current-password"></label>'
-        . '<button type="submit" class="btn primary wide">Giriş yap</button></form>'
-        . '<p class="help center">Şifrenizi unuttuysanız: Hostinger Dosya Yöneticisi\'nde <b>data/admin-auth.php</b> dosyasını silin ve bu sayfayı yenileyin; kurulum yeniden açılır.</p>';
+        . pw_field('Şifre', 'pw', ' required autofocus autocomplete="current-password"')
+        . '<button type="submit" class="btn primary wide auth-btn"><span>Giriş yap</span>' . ic('arrow') . '</button></form>'
+        . '<details class="auth-forgot"><summary>Şifremi unuttum</summary><p>Hostinger → Dosya Yöneticisi → public_html → <b>data/admin-auth.php</b> dosyasını silin ve bu sayfayı yenileyin. Kurulum ekranı açılır ve yeni şifre belirlersiniz; site içeriği silinmez.</p></details>';
 }
 
 /* ---------------- dashboard ---------------- */
@@ -170,7 +188,7 @@ function dash_todos(array $c, array $seo): array {
     return $t;
 }
 function view_dash(): string {
-    $c = C(); $pub = published_info(); $seo = seo_summary();
+    $c = C(); $pub = published_info(); $seo = seo_summary(); $media = media_items($c); $inv = inv_summary();
     $when = isset($pub['at']) ? strtotime((string)$pub['at']) : 0;
     $o = '<div class="hello"><div><h1>Hoş geldiniz</h1><p class="intro">' . e(brand()) . ' web sitesi yönetim paneli. Yaptığınız her kayıt siteye hemen yansır; önceki hali otomatik yedeklenir.</p></div>'
         . '<div class="status"><span class="dot"></span><div><b>Site yayında</b><small>' . ($when ? 'Son güncelleme ' . e(ago($when)) . ' · ' . count($pub['files'] ?? []) . ' dosya' : 'Henüz panelden yayın yapılmadı') . '</small></div></div></div>';
@@ -181,11 +199,14 @@ function view_dash(): string {
         ['sec&s=reviews', 'star', 'Yorumlar', count($c['reviews']) . ' yorum'],
         ['sec&s=business', 'building', 'Firma Bilgileri', e(phone())],
         ['seo', 'search', 'SEO Paneli', $seo['pages'] . ' sayfa · ' . ($seo['fix'] ? $seo['fix'] . ' iyileştirilebilir' : 'hepsi iyi')],
+        ['media', 'image', 'Galeri', count($media) . ' fotoğraf' . (($na = count(array_filter($media, fn($it) => $it['noalt']))) ? ' · ' . $na . ' alt metni eksik' : '')],
+        ['invoices', 'receipt', 'Faturalar', $inv['count'] ? ($inv['open_n'] ? e(inv_money($inv['open'])) . ' ödenmemiş' : $inv['count'] . ' fatura · hepsi ödendi') : 'Fatura oluşturun'],
     ];
     $o .= '<div class="tiles">';
     foreach ($tiles as [$p, $icon, $t, $s]) $o .= '<a class="tile" href="index.php?p=' . e($p) . '"><span class="ti">' . aic($icon) . '</span><span><b>' . e($t) . '</b><small>' . $s . '</small></span></a>';
     $o .= '</div>';
     $todo = dash_todos($c, $seo);
+    if ($inv['overdue']) array_unshift($todo, ['warn', '<b>' . $inv['overdue'] . ' faturanın</b> son ödeme tarihi geçti (' . e(inv_money($inv['overdue_amt'])) . ' ödenmedi).', 'invoices&f=overdue']);
     if ($todo) {
         $o .= '<section class="card"><h2>Yapılacaklar</h2><ul class="todo">';
         foreach ($todo as [$k, $msg, $link]) $o .= '<li class="t-' . $k . '">' . ($k === 'info' ? aic('help') : ic('alert')) . '<span>' . $msg . '</span>' . ($link !== '' ? '<a class="btn sm" href="index.php?p=' . e($link) . '">Düzenle</a>' : '') . '</li>';
@@ -199,6 +220,7 @@ function view_dash(): string {
         $o .= '</ul><p class="muted small">Her kayıttan önceki hali saklanır. Geri almak için <a href="index.php?p=backups">Yedekler</a>.</p>';
     } else $o .= '<p class="muted">Henüz kayıt yok.</p>';
     $o .= '</section><section class="card"><h2>Hızlı işlemler</h2><div class="qa">'
+        . '<a class="btn" href="index.php?p=invoice&amp;id=new">' . aic('receipt') . '<span>Yeni fatura oluştur</span></a>'
         . '<a class="btn" href="index.php?p=item&k=projects&i=new">' . aic('plus') . '<span>Yeni proje ekle</span></a>'
         . '<a class="btn" href="index.php?p=item&k=services&i=new">' . aic('plus') . '<span>Yeni hizmet ekle</span></a>'
         . '<a class="btn" href="index.php?p=sec&s=reviews">' . aic('star') . '<span>Yorum ekle</span></a>'
@@ -221,11 +243,13 @@ function preview_btn(): string {
 }
 function view_section(string $key, array $data, array $errors): string {
     $S = schema_sections()[$key];
-    $o = head_block($S['title'], (string)($S['intro'] ?? ''), site_link(section_page($key)));
+    $site = empty($S['private']);                         // private: panel-only settings (no page to show or preview)
+    $act = $site ? site_link(section_page($key)) : (isset($S['back']) ? '<a class="btn sm ghost" href="index.php?p=' . e($S['back'][0]) . '">' . e($S['back'][1]) . '</a>' : '');
+    $o = head_block($S['title'], (string)($S['intro'] ?? ''), $act);
     if ($errors) $o .= '<div class="flash bad">' . ic('alert') . '<div>Kaydedilmedi: ' . count($errors) . ' alanda düzeltme gerekiyor (kırmızı ile işaretli).</div></div>';
     $o .= '<form method="post" class="edit" data-guard>' . csrf_field() . '<input type="hidden" name="s" value="' . e($key) . '">'
         . '<div class="fields">' . render_fields($S['fields'], $data, [], [], $errors, '') . '</div>'
-        . savebar('save_sec', $key === 'custom' ? preview_page_select() : '') . '</form>';
+        . savebar('save_sec', $key === 'custom' ? preview_page_select() : '', $site) . '</form>';
     return $o;
 }
 /** Which page "Önizle" opens (custom code can target any page). */
@@ -237,10 +261,10 @@ function preview_page_select(): string {
     }
     return $o . '</select></label>';
 }
-function savebar(string $action, string $extra = ''): string {
+function savebar(string $action, string $extra = '', bool $site = true): string {
     // the save button comes first in the page so the Enter key never opens the preview
     return '<div class="savebar"><span class="dirty-note">' . ic('alert') . 'Kaydedilmemiş değişiklikler var</span><div class="sb-act">'
-        . '<button type="submit" class="btn primary" name="a" value="' . e($action) . '" data-busy="Kaydediliyor…">' . ic('check') . '<span>Kaydet ve yayınla</span></button>' . preview_btn() . $extra . '</div></div>';
+        . '<button type="submit" class="btn primary" name="a" value="' . e($action) . '" data-busy="Kaydediliyor…">' . ic('check') . '<span>' . ($site ? 'Kaydet ve yayınla' : 'Kaydet') . '</span></button>' . ($site ? preview_btn() : '') . $extra . '</div></div>';
 }
 
 /* ---------------- lists (services / cities / projects) ---------------- */

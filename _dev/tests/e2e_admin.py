@@ -9,9 +9,10 @@ mailbox password and an old site-links.js), starts `php -S` with _dev/router.php
 setup, login + rate limit, CSRF, every editor, uploads (logo, photos, project gallery), projects + photo viewer,
 SEO panel, backups/restore/import/downloads, preview, password change, version rebuild, deploy hook, access rules.
 """
-import io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, zipfile, urllib.request, urllib.error, urllib.parse
+import datetime, hashlib, io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, zipfile, urllib.request, urllib.error, urllib.parse
 from PIL import Image, ImageDraw
 from playwright.sync_api import sync_playwright
+from zoneinfo import ZoneInfo
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MAILPW = 'Mailbox-Test-Pass-91'
@@ -151,9 +152,9 @@ def t_setup(pn, P):
 def t_login(pn, P):
     p = pn.p
     p.locator('.logout').click(); p.wait_for_load_state()
-    check(p.locator('h1').inner_text() == 'Giriş', 'logout shows the login page')
+    check(p.locator('h1').inner_text() == 'Tekrar hoş geldiniz', 'logout shows the login page')
     pn.go('sec&s=business')
-    check(p.locator('h1').inner_text() == 'Giriş', 'editor pages need login')
+    check(p.locator('h1').inner_text() == 'Tekrar hoş geldiniz', 'editor pages need login')
     for i in range(7):
         p.fill('[name=pw]', 'wrong-password-%d' % i); p.click('button[type=submit]'); p.wait_for_load_state()
     check('yanlış' in pn.flash(), 'wrong password message')
@@ -165,8 +166,30 @@ def t_login(pn, P):
     p.fill('[name=pw]', PW1); p.click('button[type=submit]'); p.wait_for_load_state()
     check(p.locator('h1').inner_text() == 'Hoş geldiniz', 'login works with the right password')
 
+def t_login_look(pn, P):
+    # the sign-in page: photo side, password with show/hide, help for a lost password
+    ctx = pn.p.context.browser.new_context(viewport={'width': 1366, 'height': 900})
+    g = ctx.new_page()
+    g.goto(ADMIN); g.wait_for_load_state()
+    check(g.locator('.auth-art').is_visible() and g.locator('.auth-art img.auth-bg').count() == 1, 'sign-in page: photo panel on computers')
+    pw = g.locator('input[name=pw]')
+    check(pw.get_attribute('type') == 'password' and pw.evaluate('e => e === document.activeElement'), 'sign-in page: password field focused')
+    g.click('[data-pw-toggle]')
+    check(pw.get_attribute('type') == 'text' and g.locator('[data-pw-toggle]').get_attribute('aria-label') == 'Şifreyi gizle', 'sign-in page: the eye button shows the password')
+    g.click('[data-pw-toggle]')
+    check(pw.get_attribute('type') == 'password', 'sign-in page: and hides it again')
+    g.click('.auth-forgot summary')
+    check('admin-auth.php' in g.locator('.auth-forgot').inner_text(), 'sign-in page: "Şifremi unuttum" explains the reset')
+    ctx.close()
+    m = pn.p.context.browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
+    g = m.new_page(); g.goto(ADMIN); g.wait_for_load_state()
+    sw = g.evaluate('document.documentElement.scrollWidth')
+    btn = g.locator('.auth-btn').bounding_box()
+    check(sw <= 390 and btn and btn['y'] + btn['height'] <= 844, f'sign-in page on a phone: fits the screen, button visible ({sw}px)')
+    m.close()
+
 def t_security(pn, P):
-    for path, code in [('/data/content.json', 403), ('/data/admin-auth.php', 403), ('/app/lib.php', 403), ('/app/content.default.json', 403),
+    for path, code in [('/data/content.json', 403), ('/data/invoices.json', 403), ('/data/admin-auth.php', 403), ('/app/lib.php', 403), ('/app/content.default.json', 403),
                        ('/form-config.php', 403), ('/lib/phpmailer/PHPMailer.php', 403), ('/_dev/build.php', 403), ('/.htaccess', 403),
                        ('/admin/', 200), ('/', 200), ('/missing-page.html', 404)]:
         st, _ = http(path)
@@ -779,6 +802,222 @@ def t_custom(pn, P):
     check('dm-custom-css' not in a and 'dm-custom-test' not in a and 'dmBodyEnd' not in a and 'data-page="about"' in a, 'switched off: no custom code on the pages')
     check(content()['custom']['css'].startswith('body[data-page="faq"]'), 'switched off: the code itself is kept')
 
+def t_theme(pn, P):
+    # Özel Kod → "Sitenin kendi kodu": the site's own CSS and JavaScript, editable, with a way back to the original
+    p = pn.p
+    pn.go('sec&s=custom')
+    p.locator('[name="f[custom.enabled]"][type=checkbox]').check()
+    ta = p.locator('textarea[name="f[custom.theme_css]"]'); tj = p.locator('textarea[name="f[custom.theme_js]"]')
+    css0 = ta.input_value(); js0 = tj.input_value()
+    style = rd('app/theme/style.html')
+    check(len(css0) > 5000 and css0 in style and not css0.lstrip().startswith('<style'), f'site CSS shown in the editor without its <style> wrapper ({len(css0)} characters)')
+    check(js0.lstrip().startswith('<script') and '__GA4__' in js0 and js0 in rd('app/theme/script.html'), 'site JavaScript shown with its <script> blocks')
+    check('orijinal' in p.locator('.ftheme .tc-state').first.inner_text(), 'state: the original code is in use')
+    ta.fill(css0 + '\nbody[data-page] { outline: 3px solid rgb(1, 2, 3); }')
+    tj.fill(js0 + '\n<script>window.dmThemeJs = 1;</script>')
+    pn.save()
+    check('Kaydedildi' in pn.flash(), 'edited site code saved')
+    c = content()['custom']
+    check(c['theme_css'].endswith('rgb(1, 2, 3); }') and c['theme_css_base'] == hashlib.sha1(css0.encode()).hexdigest() and c['theme_js_base'] != '', 'edited copy stored with a fingerprint of the original')
+    a = rd('about.html')
+    check(a.count(css0[:300]) == 1 and a.count('rgb(1, 2, 3)') == 1 and a.count(js0[:200]) == 1, 'pages use the edited copy instead of the original (nothing doubled)')
+    v = p.context.new_page(); errs = []
+    v.on('pageerror', lambda e: errs.append(str(e)))
+    v.goto(f'{BASE}/about.html'); v.wait_for_load_state()
+    check(v.evaluate("getComputedStyle(document.body).outlineColor") == 'rgb(1, 2, 3)' and v.evaluate('window.dmThemeJs') == 1 and not errs, 'edited CSS and JavaScript work on the live page')
+    v.close()
+    pn.go('sec&s=custom')
+    check('Düzenlenmiş' in p.locator('.ftheme .tc-state').first.inner_text(), 'state: the edited copy is in use')
+    p.locator('textarea[name="f[custom.theme_js]"]').fill('alert(1)')
+    pn.save()
+    check('blokları içinde' in p.locator('.ferr').first.inner_text() and content()['custom']['theme_js'].endswith('dmThemeJs = 1;</script>'), 'JavaScript outside <script> blocks refused, nothing saved')
+    pn.go('sec&s=custom')
+    p.once('dialog', lambda d: d.accept())
+    p.locator('.ftheme').first.locator('[data-code-reset]').click()
+    check(p.locator('textarea[name="f[custom.theme_css]"]').input_value() == css0, '"Orijinal koda dön" brings the original back into the editor')
+    p.once('dialog', lambda d: d.accept())
+    p.locator('.ftheme').nth(1).locator('[data-code-reset]').click()
+    pn.save()
+    c = content()['custom']; a = rd('about.html')
+    check(c['theme_css'] == '' and c['theme_js'] == '' and c['theme_css_base'] == '' and 'rgb(1, 2, 3)' not in a and 'dmThemeJs' not in a and a.count(css0[:300]) == 1, 'back to the original: nothing stored, pages use the shipped code again')
+
+def t_media(pn, P):
+    # Galeri: every photo with its file name and alternative text, editable in a window
+    p = pn.p
+    pn.go('media')
+    cards = p.locator('.mcard')
+    n = cards.count()
+    check(p.locator('h1').inner_text() == 'Galeri' and n >= 20, f'Galeri lists the photos of the whole site ({n})')
+    c = content()
+    svc = c['services'][0]
+    card = p.locator(f'.mcard[data-media-open="{svc["image"]["file"]}"]')
+    check(card.count() == 1 and svc['image']['alt'] in card.inner_text() and os.path.basename(svc['image']['file']) in card.inner_text(), 'card shows the file name and the alternative text')
+    p.fill('#mediaSearch', os.path.basename(svc['image']['file'])[:12])
+    vis = p.locator('.mcard:not([hidden])').count()
+    check(0 < vis < n, f'search filters the photos ({vis})')
+    p.fill('#mediaSearch', '')
+    card.click()
+    p.wait_for_selector('#mediaModal form.media-ed')
+    f = p.locator('#mediaModal form.media-ed')
+    check(f.locator('#mdAlt').input_value() == svc['image']['alt'] and f.locator('#mdName').input_value() == os.path.splitext(os.path.basename(svc['image']['file']))[0], 'window shows the editable file name and alt text')
+    check(('open=' + urllib.parse.quote(svc['image']['file'], safe='')) in p.url or 'open=' in p.url, 'address remembers the open photo')
+    check('Hizmet: ' + svc['name'] in f.locator('.musage').inner_text(), 'window lists where the photo is used')
+    f.locator('#mdAlt').fill('Plumber clearing a kitchen drain in a Toronto home')
+    f.locator('#mdName').fill('Kitchen Drain Toronto')
+    f.locator('button[value=media_save]').click()
+    p.wait_for_selector('.toast', timeout=15000)
+    p.evaluate("document.querySelectorAll('.toast').forEach(t => t.remove())")
+    c = content(); img = c['services'][0]['image']
+    check(img['alt'] == 'Plumber clearing a kitchen drain in a Toronto home', 'alt text saved into the content')
+    check(img['file'].startswith('assets/uploads/') and os.path.basename(img['file']).startswith('kitchen-drain-toronto') and exists(img['file']), f'file renamed as a new copy ({img["file"]})')
+    check(exists(svc['image']['file']), 'old file kept (old backups still use it)')
+    page = rd(svc['slug'] + '.html')
+    check(os.path.basename(img['file']) in page and 'alt="Plumber clearing a kitchen drain in a Toronto home"' in page, 'the service page shows the new name and alt text')
+    check(f.locator('#mdName').input_value().startswith('kitchen-drain-toronto'), 'window shows the new name after saving')
+    f.locator('#mdAlt').fill('')
+    f.locator('button[value=media_save]').click()
+    p.wait_for_selector('#mediaModal [data-media-err]:not([hidden])')
+    check('boş bırakılamaz' in f.locator('[data-media-err]').inner_text() and content()['services'][0]['image']['alt'] != '', 'empty alt text refused for a service photo')
+    p.once('dialog', lambda d: d.accept())                 # "not saved, close anyway?"
+    p.keyboard.press('Escape')
+    wait_until(p, lambda: not p.evaluate("document.querySelector('#mediaModal').open"))
+    p.click('#mediaChips a[data-f=logo]')
+    cats = set(x.get_attribute('data-cat') for x in p.locator('.mcard:not([hidden])').all())
+    check(cats == {'logo'}, 'filter: logos only')
+
+def inv_pdf_text(data, name):
+    path = os.path.join(TMP, name)
+    open(path, 'wb').write(data)
+    ok = subprocess.run(['qpdf', '--check', path], capture_output=True, text=True)
+    txt = subprocess.run(['pdftotext', '-layout', path, '-'], capture_output=True, text=True).stdout
+    pages = len(re.findall(r'\f', txt)) or 1
+    subprocess.run(['pdftoppm', '-png', '-r', '60', '-f', '1', '-l', '1', path, path[:-4]], capture_output=True)
+    return ok.returncode == 0, txt, pages
+
+def inv_totals_text(p):
+    return {k: p.locator(f'.inv-sum [data-inv={k}]').inner_text() for k in ('sub', 'disc', 'tax', 'total', 'paid', 'due')}
+
+def t_invoices(pn, P):
+    p = pn.p
+    pn.go('invoices')
+    check(p.locator('h1').inner_text() == 'Faturalar' and p.locator('.empty').count() == 1, 'Faturalar page opens (no invoices yet)')
+    check('HST numaranız' in p.locator('.flash.warn').inner_text(), 'reminder to add the HST number')
+    # settings: panel-only, nothing on the website changes
+    pn.go('sec&s=invoicing')
+    check(p.locator('button[value=preview]').count() == 0 and p.locator('button[value=save_sec]').inner_text().strip() == 'Kaydet', 'Fatura Ayarları: no site preview, plain Save')
+    before = rd('index.html')
+    pn.field('invoice.tax_number').fill('123456789 RT0001')
+    pn.save()
+    check('Fatura Ayarları kaydedildi' in pn.flash() and content()['invoice']['tax_number'] == '123456789 RT0001', 'invoice settings saved')
+    check(rd('index.html') == before and '123456789' not in rd('contact.html'), 'website pages unchanged by invoice settings')
+    # a new invoice
+    pn.go('invoice&id=new')
+    now = datetime.datetime.now(ZoneInfo('America/Toronto'))          # the panel's time zone
+    today = now.strftime('%Y-%m-%d')
+    check(pn.field('number').input_value() == 'DM-1001' and pn.field('date').input_value() == today and pn.field('status').input_value() == 'sent', 'new invoice: next number, today, "Kesildi"')
+    check(pn.field('due').input_value() == (now + datetime.timedelta(days=14)).strftime('%Y-%m-%d'), 'due date 14 days later')
+    pn.field('customer.name').fill('Jane Cooper')
+    pn.field('customer.address').fill('12 Maple Avenue\nToronto, ON M4E 1A1')
+    pn.field('customer.email').fill('jane@example.com')
+    pn.field('customer.phone').fill('416-555-0199')
+    pn.field('site').fill('88 Lakeshore Road, Unit 4, Mississauga')
+    p.fill('[name="f[items][0][desc]"]', 'Replaced kitchen faucet – supplied Moen chrome faucet')
+    p.fill('[name="f[items][0][qty]"]', '1'); p.fill('[name="f[items][0][price]"]', '289.50')
+    p.click('.rep-add')
+    p.fill('[name="f[items][1][desc]"]', 'Labour (hours)')
+    p.fill('[name="f[items][1][qty]"]', '2,5'); p.fill('[name="f[items][1][price]"]', '95')
+    t = inv_totals_text(p)
+    check(t['sub'] == '$527.00' and t['tax'] == '$68.51' and t['total'] == '$595.51' and t['due'] == '$595.51', f'live totals while typing ({t})')
+    check(p.locator('.rep-item').nth(1).locator('.inv-line').inner_text() == '$237.50' and p.locator('.savebar [data-inv=total]').inner_text() == '$595.51', 'line amount and total in the save bar')
+    pn.field('discount').fill('27'); pn.field('paid').fill('100')
+    t = inv_totals_text(p)
+    check(t['disc'] == '-$27.00' and t['tax'] == '$65.00' and t['total'] == '$565.00' and t['paid'] == '-$100.00' and t['due'] == '$465.00', f'discount before tax, deposit taken off ({t})')
+    # preview: a PDF of what is on the screen, nothing saved
+    with p.context.expect_page() as newp:
+        p.click('button[value=invoice_pdf]')
+    newp.value.close()
+    data = dict(p.evaluate("Array.from(new FormData(document.querySelector('form[data-invoice]')))"))
+    data['a'] = 'invoice_pdf'
+    r = p.request.post(ADMIN + 'index.php', form=data)
+    ok, txt, _ = inv_pdf_text(r.body(), 'preview.pdf')
+    check(r.headers.get('content-type') == 'application/pdf' and 'inline' in r.headers.get('content-disposition', '') and ok and 'PREVIEW' in txt and 'Jane Cooper' in txt, '"PDF önizle" gives a valid PDF of the unsaved invoice')
+    check(not exists('data/invoices.json'), 'preview saved nothing')
+    pn.save('invoice_save')
+    check('DM-1001 kaydedildi' in pn.flash() and 'p=invoice&id=' in p.url, 'invoice saved, editor stays open')
+    db = json.loads(rd('data/invoices.json'))
+    inv = db['list'][0]
+    check(len(db['list']) == 1 and inv['customer']['name'] == 'Jane Cooper' and len(inv['items']) == 2 and inv['items'][1]['qty'] == 2.5 and db['next'] == 1002, 'stored in data/invoices.json')
+    check(oct(os.stat(os.path.join(SITE, 'data/invoices.json')).st_mode & 0o777) == '0o600', 'invoice file readable only by the server account')
+    check(inv_totals_text(p)['due'] == '$465.00', 'saved totals match the live totals')
+    r = p.request.get(ADMIN + 'index.php?p=invoice_pdf&id=' + inv['id'] + '&dl=1')
+    ok, txt, pages = inv_pdf_text(r.body(), 'invoice.pdf')
+    check(r.headers.get('content-type') == 'application/pdf' and 'attachment; filename="Invoice-DM-1001.pdf"' in r.headers.get('content-disposition', '') and ok, 'PDF download: valid file named Invoice-DM-1001.pdf')
+    want = ['INVOICE', 'DM-1001', 'Demir Mechanical & Construction Ltd.', 'HST # 123456789 RT0001', 'BILL TO', 'Jane Cooper', '12 Maple Avenue', 'jane@example.com',
+            'SERVICE ADDRESS', 'Replaced kitchen faucet – supplied Moen chrome faucet', 'Labour (hours)', '$237.50', 'Subtotal', '$527.00', 'Discount', '-$27.00', 'HST (13%)', '$65.00',
+            'Total', '$565.00', 'Amount paid', '-$100.00', 'Balance due (CAD)', '$465.00', 'Thank you for your business!', 'Interac e-Transfer: info@demirmechanical.com', 'Cheque payable to: Demir Mechanical & Construction Ltd.']
+    miss = [w for w in want if w not in txt]
+    check(not miss and 'PREVIEW' not in txt and 'Ltd..' not in txt, 'PDF has the business, customer, lines and totals' + (f' (missing: {miss})' if miss else ''))
+    check(p.request.get(ADMIN + 'index.php?p=invoice_pdf&id=' + inv['id']).headers.get('content-disposition', '').startswith('inline'), '"PDF aç" opens the PDF in the browser')
+    # mistakes are caught, nothing is saved
+    pn.go('invoice&id=new')
+    check(pn.field('number').input_value() == 'DM-1002', 'next invoice gets the next number')
+    pn.field('number').fill('dm-1001')
+    pn.field('due').fill('2020-01-01')
+    p.fill('[name="f[items][0][price]"]', '50')
+    pn.save('invoice_save')
+    errs = ' '.join(p.locator('.ferr').all_inner_texts())
+    check('kullanılıyor' in errs and 'boş bırakılamaz' in errs and 'açıklama yazın' in errs and 'önce olamaz' in errs, 'duplicate number, missing name and description, due date before invoice date refused')
+    check(len(json.loads(rd('data/invoices.json'))['list']) == 1, 'nothing saved after the errors')
+    # a customer invoiced before: the name fills the other details
+    pn.go('invoice&id=new')
+    pn.field('customer.name').fill('Jane Cooper')
+    check(pn.field('customer.email').input_value() == 'jane@example.com' and pn.field('customer.address').input_value().startswith('12 Maple') and pn.field('site').input_value().startswith('88 Lakeshore'), 'known customer: details filled in automatically')
+    # list, search and filters
+    pn.go('invoices')
+    row = p.locator('.irow').first
+    check(p.locator('.irow').count() == 1 and 'Jane Cooper' in row.inner_text() and '$565.00' in row.inner_text() and 'kalan $465.00' in row.inner_text() and row.locator('.tag').inner_text() == 'Kesildi', 'list shows customer, total, balance and status')
+    check('$465.00' in p.locator('.inv-tiles').inner_text(), 'unpaid total at the top')
+    p.fill('#invSearch', 'maple'); vis1 = p.locator('.irow:not([hidden])').count()
+    p.fill('#invSearch', 'zzz'); vis2 = p.locator('.irow:not([hidden])').count()
+    check(vis1 == 1 and vis2 == 0 and p.locator('#invApp .seo-none').is_visible(), 'search by address finds the invoice')
+    p.fill('#invSearch', '')
+    # paid in full
+    pn.go('invoice&id=' + inv['id'])
+    pn.field('status').select_option('paid')
+    check(inv_totals_text(p)['due'] == '$0.00', 'live: "Ödendi" leaves nothing to pay')
+    pn.save('invoice_save')
+    ok, txt, _ = inv_pdf_text(p.request.get(ADMIN + 'index.php?p=invoice_pdf&id=' + inv['id']).body(), 'paid.pdf')
+    check(ok and 'PAID' in txt and 'AMOUNT PAID' in txt and re.search(r'Balance due \(CAD\)\s+\$0\.00', txt), 'paid invoice: PAID stamp, balance $0.00')
+    # copy for a repeat job, then make it overdue
+    with p.expect_navigation():
+        p.click('form.inline button:has-text("Kopyala")')
+    check('Kopya oluşturuldu: DM-1002' in pn.flash() and pn.field('status').input_value() == 'draft' and pn.field('paid').input_value() == '0', 'copy: new number, draft, nothing paid')
+    pn.field('status').select_option('sent'); pn.field('date').fill('2026-01-05'); pn.field('due').fill('2026-01-19')
+    pn.save('invoice_save')
+    pn.go('invoices')
+    check(p.locator('.irow[data-st=overdue]').count() == 1 and 'Gecikmiş' in p.locator('#invChips').inner_text(), 'past the due date: shown as overdue')
+    p.click('#invChips a[data-f=paid]')
+    check([r.get_attribute('data-st') for r in p.locator('.irow:not([hidden])').all()] == ['paid'] and 'f=paid' in p.url, 'filter: paid only')
+    pn.go('dash')
+    check('son ödeme tarihi geçti' in p.locator('.todo').inner_text() and 'ödenmemiş' in p.locator('.tile:has-text("Faturalar")').inner_text(), 'dashboard: overdue reminder and unpaid amount')
+    # a long invoice continues on a second page
+    db = json.loads(rd('data/invoices.json'))
+    big = dict(db['list'][0]); big['id'] = 'b1g000000001'; big['number'] = 'DM-1500'; big['status'] = 'void'
+    big['items'] = [{'desc': f'Line {i + 1}: copper pipe, fittings and labour for the basement bathroom rough-in', 'qty': 1, 'price': 10 + i} for i in range(45)]
+    db['list'].append(big); open(os.path.join(SITE, 'data/invoices.json'), 'w').write(json.dumps(db))
+    ok, txt, pages = inv_pdf_text(p.request.get(ADMIN + 'index.php?p=invoice_pdf&id=b1g000000001').body(), 'long.pdf')
+    check(ok and pages >= 2 and 'Page 1 of' in txt and 'Line 45:' in txt and 'VOID' in txt, f'long invoice: {pages} pages with page numbers, VOID stamp')
+    # delete (a copy stays in the backups)
+    pn.go('invoice&id=b1g000000001')
+    p.once('dialog', lambda d: d.accept())
+    with p.expect_navigation():
+        p.click('form.inline button.danger')
+    check('DM-1500' in pn.flash() and 'silindi' in pn.flash() and len(json.loads(rd('data/invoices.json'))['list']) == 2, 'invoice deleted')
+    check(len([x for x in os.listdir(os.path.join(SITE, 'data/backups')) if x.startswith('invoices-')]) >= 3, 'every change keeps a copy in data/backups')
+    # private: no session, no PDF
+    st, body = http('/admin/index.php?p=invoice_pdf&id=' + inv['id'] + '&dl=1')
+    check('%PDF' not in body and 'Tekrar hoş geldiniz' in body, 'PDF needs the panel login')
+
 def t_version_rebuild(pn, P):
     pub = json.loads(rd('data/published.json')); pub['version'] = '2000.01.01'
     open(os.path.join(SITE, 'data/published.json'), 'w').write(json.dumps(pub))
@@ -818,14 +1057,14 @@ def t_account(pn, P):
     check(p.locator('h1').inner_text() == 'Hoş geldiniz', 'this device stays logged in after the change')
     other = p.context.browser.new_context().new_page()
     other.goto(ADMIN); other.fill('[name=pw]', PW1); other.click('button[type=submit]'); other.wait_for_load_state()
-    check(other.locator('h1').inner_text() == 'Giriş', 'old password no longer works')
+    check(other.locator('h1').inner_text() == 'Tekrar hoş geldiniz', 'old password no longer works')
     other.fill('[name=pw]', PW2); other.click('button[type=submit]'); other.wait_for_load_state()
     check(other.locator('h1').inner_text() == 'Hoş geldiniz', 'new password works on another device')
     pn.go('account')
     p.once('dialog', lambda d: d.accept())
     with p.expect_navigation(): p.click('button:has-text("Tüm cihazlardan çıkış yap")')
     other.goto(ADMIN + 'index.php?p=dash'); other.wait_for_load_state()
-    check(other.locator('h1').inner_text() == 'Giriş', 'logout everywhere ends the other session')
+    check(other.locator('h1').inner_text() == 'Tekrar hoş geldiniz', 'logout everywhere ends the other session')
     other.context.close()
     p.fill('[name=pw]', PW2); p.click('button[type=submit]'); p.wait_for_load_state()
 
@@ -841,7 +1080,8 @@ def t_mobile(pn, P, browser):
     check(sw <= 390, f'phone: no sideways scrolling in the editor ({sw}px)')
     bar = m.locator('.savebar').bounding_box()
     check(bar and bar['y'] + bar['height'] <= 844 + 1, 'phone: save bar visible at the bottom')
-    for q in ['list&k=services', 'item&k=projects&i=0', 'seo', 'backups', 'account', 'sec&s=menu', 'sec&s=custom']:
+    inv = json.loads(rd('data/invoices.json'))['list'][0]['id'] if exists('data/invoices.json') else 'new'
+    for q in ['list&k=services', 'item&k=projects&i=0', 'seo', 'media', 'invoices', 'invoice&id=new', 'invoice&id=' + inv, 'sec&s=invoicing', 'backups', 'account', 'sec&s=menu', 'sec&s=custom']:
         m.goto(ADMIN + 'index.php?p=' + q); m.wait_for_load_state()
         sw = m.evaluate('document.documentElement.scrollWidth')
         check(sw <= 390, f'phone: {q} fits the screen ({sw}px)')
@@ -866,9 +1106,9 @@ def t_parity(pn, P):
         else: diff += 1; print('     differs:', n)
     check(diff == 0, f'panel output identical to the CLI build ({same} files)')
 
-TESTS = [('setup', t_setup), ('login', t_login), ('security', t_security), ('business', t_business), ('menu', t_menu), ('branding', t_branding),
+TESTS = [('setup', t_setup), ('login', t_login), ('login_look', t_login_look), ('security', t_security), ('business', t_business), ('menu', t_menu), ('branding', t_branding),
          ('services', t_services), ('cities', t_cities), ('projects', t_projects), ('reviews_faq', t_reviews_faq), ('seo', t_seo),
-         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('custom', t_custom), ('version', t_version_rebuild), ('account', t_account),
+         ('preview', t_preview), ('uploads', t_upload_errors), ('backups', t_backups), ('cleanup', t_cleanup), ('custom', t_custom), ('theme', t_theme), ('media', t_media), ('invoices', t_invoices), ('version', t_version_rebuild), ('account', t_account),
          ('mobile', t_mobile), ('parity', t_parity)]
 
 def main():

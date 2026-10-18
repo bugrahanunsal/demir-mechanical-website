@@ -53,7 +53,7 @@
     var f = e.target, msg = f.getAttribute('data-confirm');
     if (msg && !window.confirm(msg)) { e.preventDefault(); return; }
     var sub = e.submitter;
-    if (sub && sub.value === 'preview') return;               // preview opens a new tab; this page stays as it is
+    if (sub && (sub.value === 'preview' || sub.getAttribute('formtarget') === '_blank')) return;   // previews open a new tab; this page stays as it is
     if ($('.imgf.busy', f)) { e.preventDefault(); toast('Fotoğraf yüklemesinin bitmesini bekleyin.'); return; }
     leaving = true;
     if (sub && sub.hasAttribute('data-busy')) {
@@ -62,7 +62,7 @@
   });
   // Enter in a one-line field should not send the form
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target.matches && e.target.matches('form.edit input[type=text]')) e.preventDefault();
+    if (e.key === 'Enter' && e.target.matches && e.target.matches('form.edit input[type=text], form.edit input[type=date]')) e.preventDefault();
   });
 
   /* ---------- code fields (Özel Kod) ---------- */
@@ -130,6 +130,25 @@
     if (t.closest('[data-side-close]')) { setNav(false); return; }
     var fx = t.closest('.flash-x'); if (fx) { fx.closest('.flash').remove(); return; }
     var bk = t.closest('[data-back]'); if (bk && history.length > 1) { e.preventDefault(); history.back(); return; }
+    var cr = t.closest('[data-code-reset]');
+    if (cr) {
+      var fld = cr.closest('.ftheme'), ta = fld.querySelector('textarea'), tpl = fld.querySelector('template.code-orig');
+      if (ta.value !== tpl.content.textContent && !window.confirm('Bu koddaki bütün değişiklikler silinip sitenin orijinal kodu geri gelecek (kaydedince geçerli olur). Devam edilsin mi?')) return;
+      ta.value = tpl.content.textContent; markDirty(ta.closest('form'));
+      var st = fld.querySelector('.tc-state'); st.className = 'tc-state orig'; var msg = st.querySelector('[data-tc-msg]'); if (msg) msg.textContent = 'Orijinal koda döndürüldü; kaydedince geçerli olur.';
+      return;
+    }
+    var eye = t.closest('[data-pw-toggle]');
+    if (eye) {
+      var pin = eye.parentElement.querySelector('input'), show = pin.type === 'password';
+      pin.type = show ? 'text' : 'password'; eye.classList.toggle('on', show);
+      eye.setAttribute('aria-label', show ? 'Şifreyi gizle' : 'Şifreyi göster'); eye.title = eye.getAttribute('aria-label');
+      eye.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (show
+        ? '<path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.2A10 10 0 0 1 12 4c6.4 0 10 8 10 8a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/>'
+        : '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>') + '</svg>';
+      pin.focus();
+      return;
+    }
 
     var add = t.closest('.rep-add');
     if (add) {
@@ -660,7 +679,7 @@
     dlg.addEventListener('click', function (e) { if (e.target === dlg && downOnBackdrop) close(); });  // click next to the window
     document.addEventListener('submit', function (e) {
       var f = e.target;
-      if (!f.matches || !f.matches('form.seo-ed') || !window.fetch) return;
+      if (!f.matches || !f.matches('form.seo-ed:not(.media-ed)') || !window.fetch) return;
       e.preventDefault(); e.stopImmediatePropagation();
       save(f, e.submitter);
     }, true);
@@ -668,6 +687,205 @@
     var first = $('form.seo-ed', dlg);
     if (first) { var html = dlg.innerHTML; dlg.removeAttribute('open'); show(html); }
   }
+
+  /* ---------- Galeri: every photo with its file name and alternative text ---------- */
+  var mediaApp = $('#mediaApp');
+  if (mediaApp) mediaPanel(mediaApp);
+  function mediaPanel(app) {
+    var grid = $('#mediaGrid'), search = $('#mediaSearch'), chips = $('#mediaChips'), dlg = $('#mediaModal');
+    var filter = app.getAttribute('data-filter') || '', cur = null, downOnBackdrop = false;
+    function shown(c) {
+      var q = search ? search.value.trim().toLowerCase() : '';
+      if ((filter === 'photo' || filter === 'og' || filter === 'logo') && c.getAttribute('data-cat') !== filter) return false;
+      if (filter === 'noalt' && c.getAttribute('data-na') !== '1') return false;
+      if (filter === 'unused' && c.getAttribute('data-un') !== '1') return false;
+      return !q || (c.getAttribute('data-q') || '').indexOf(q) >= 0;
+    }
+    function applyFilter() {
+      var any = false;
+      $$('.mcard', grid).forEach(function (c) { var on = shown(c); c.hidden = !on; if (on) any = true; });
+      var none = $('.seo-none', grid); if (none) none.hidden = any;
+      $$('a[data-f]', chips).forEach(function (a) {
+        var on = a.getAttribute('data-f') === filter; a.classList.toggle('on', on);
+        if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+      });
+    }
+    function setUrl() {
+      var u = 'index.php?p=media' + (filter ? '&f=' + filter : '') + (cur && dlg.open ? '&open=' + encodeURIComponent(cur.file) : '');
+      try { history.replaceState(null, '', u); } catch (e) {}
+    }
+    if (search) search.addEventListener('input', applyFilter);
+    chips.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-f]'); if (!a) return;
+      e.preventDefault(); filter = a.getAttribute('data-f'); applyFilter(); setUrl();
+    });
+    applyFilter();
+    function setDirty(on) {
+      if (cur) { cur.dirty = on; cur.form.classList.toggle('dirty', on); }
+      dirty = on || !!$('form.dirty[data-guard]');
+    }
+    function leaveOk() { return !cur || !cur.dirty || window.confirm('Bu fotoğraftaki değişiklikler kaydedilmedi. Kaydetmeden devam edilsin mi?'); }
+    function nav(f, dir, file) {
+      var el = $('[data-media-nav="' + dir + '"]', f); if (!el) return;
+      var n;
+      if (file) {
+        n = document.createElement('a'); n.className = 'ib'; n.href = 'index.php?p=media&open=' + encodeURIComponent(file);
+        n.setAttribute('data-media-open', file); n.title = dir === 'prev' ? 'Önceki fotoğraf' : 'Sonraki fotoğraf'; n.setAttribute('aria-label', n.title);
+      } else { n = document.createElement('span'); n.className = 'ib off'; }
+      n.setAttribute('data-media-nav', dir); n.textContent = dir === 'prev' ? '‹' : '›';
+      el.replaceWith(n);
+    }
+    function show(html) {
+      dlg.innerHTML = html;
+      var f = $('form.media-ed', dlg);
+      if (!f) { cur = null; return; }
+      cur = { form: f, file: f.getAttribute('data-file'), dirty: false };
+      var list = $$('.mcard', grid).filter(function (c) { return !c.hidden; }).map(function (c) { return c.getAttribute('data-media-open'); });
+      var i = list.indexOf(cur.file);
+      nav(f, 'prev', i > 0 ? list[i - 1] : ''); nav(f, 'next', i >= 0 && i < list.length - 1 ? list[i + 1] : '');
+      if (!dlg.open) { try { dlg.showModal(); } catch (e) { dlg.setAttribute('open', ''); } }
+      var tt = $('.sd-ttl', f); if (tt) try { tt.focus({ preventScroll: true }); } catch (e) {}
+      document.body.classList.add('modal-open');
+      setDirty(false); setUrl();
+    }
+    function open(file) {
+      if (cur && cur.file === file && dlg.open) return;
+      if (!leaveOk()) return;
+      dlg.classList.add('loading');
+      fetch('index.php?p=media_edit&file=' + encodeURIComponent(file), { credentials: 'same-origin', headers: { 'Accept': 'text/html' } })
+        .then(function (r) { return r.text().then(function (t) { return { status: r.status, text: t }; }); })
+        .then(function (r) {
+          if (r.text.indexOf('media-ed"') < 0) throw new Error(r.status === 404 ? 'Bu fotoğraf bulunamadı. Sayfayı yenileyin.' : 'Fotoğraf açılamadı. Oturum kapanmış olabilir; sayfayı yenileyin.');
+          show(r.text);
+          var b = $('.sd-body', dlg); if (b) b.scrollTop = 0;
+        })
+        .catch(function (err) { window.alert(err.message); })
+        .then(function () { dlg.classList.remove('loading'); });
+    }
+    function close() {
+      if (!leaveOk()) return;
+      cur = null; setDirty(false);
+      if (dlg.open) dlg.close();
+      dlg.removeAttribute('open'); dlg.innerHTML = '';
+      document.body.classList.remove('modal-open');
+      setUrl();
+    }
+    function save(f, btn) {
+      if (f.classList.contains('busy')) return;
+      var fd = new FormData(f); fd.set('a', 'media_save');
+      btn = btn || $('button[value=media_save]', f);
+      var sp = btn && btn.querySelector('span'), old = sp ? sp.textContent : '';
+      f.classList.add('busy'); if (btn) btn.disabled = true; if (sp) sp.textContent = 'Kaydediliyor…';
+      fetch('index.php', { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'Accept': 'application/json', 'X-CSRF': CSRF } })
+        .then(function (r) { return r.json().catch(function () { throw new Error('Sunucu hatası (' + r.status + '). Sayfayı yenileyip tekrar deneyin.'); }); })
+        .then(function (j) {
+          if (!j.ok) throw new Error(j.error || 'Kaydedilemedi.');
+          setDirty(false);
+          if (j.grid) grid.innerHTML = j.grid;
+          if (j.chips) chips.innerHTML = j.chips;
+          applyFilter();
+          if (j.html) show(j.html);
+          toast(j.note || 'Kaydedildi.');
+        })
+        .catch(function (err) { var er = $('[data-media-err]', f); if (er) { er.textContent = err.message; er.hidden = false; } else window.alert(err.message); })
+        .then(function () { f.classList.remove('busy'); if (btn) btn.disabled = false; if (sp) sp.textContent = old; });
+    }
+    app.addEventListener('click', function (e) {
+      var op = e.target.closest('[data-media-open]'); if (op) { e.preventDefault(); open(op.getAttribute('data-media-open')); return; }
+      if (e.target.closest('[data-media-close]')) { e.preventDefault(); close(); }
+    });
+    dlg.addEventListener('input', function (e) {
+      if (!cur || !cur.form.contains(e.target) || !e.target.name) return;
+      setDirty(true); var er = $('[data-media-err]', cur.form); if (er) er.hidden = true;
+    });
+    dlg.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('input[type=text]')) { e.preventDefault(); if (cur && $('button[value=media_save]', cur.form)) save(cur.form); } });
+    dlg.addEventListener('cancel', function (e) { e.preventDefault(); close(); });
+    dlg.addEventListener('close', function () {
+      if (!cur) return;
+      cur = null; setDirty(false); dlg.innerHTML = ''; document.body.classList.remove('modal-open'); setUrl();
+    });
+    dlg.addEventListener('mousedown', function (e) { downOnBackdrop = e.target === dlg; });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg && downOnBackdrop) close(); });
+    document.addEventListener('submit', function (e) {
+      var f = e.target;
+      if (!f.matches || !f.matches('form.media-ed') || !window.fetch) return;
+      e.preventDefault(); e.stopImmediatePropagation(); save(f, e.submitter);
+    }, true);
+    var first = $('form.media-ed', dlg);
+    if (first) { var html = dlg.innerHTML; dlg.removeAttribute('open'); show(html); }
+  }
+
+  /* ---------- Faturalar: list search + filters ---------- */
+  var invApp = $('#invApp');
+  if (invApp) (function () {
+    var q = $('#invSearch'), chips = $('#invChips'), rows = $$('.irow', invApp), none = $('.seo-none', invApp);
+    var f = (chips && $('a.on', chips) || { getAttribute: function () { return ''; } }).getAttribute('data-f') || '';
+    function hit(st) { return !f || st === f || (f === 'open' && (st === 'sent' || st === 'overdue')); }
+    function apply() {
+      var terms = (q ? q.value : '').toLowerCase().trim().split(/\s+/).filter(Boolean), n = 0;
+      rows.forEach(function (r) {
+        var d = r.getAttribute('data-q') || '', ok = hit(r.getAttribute('data-st')) && terms.every(function (t) { return d.indexOf(t) >= 0; });
+        r.hidden = !ok; if (ok) n++;
+      });
+      if (none) none.hidden = n > 0;
+    }
+    if (chips) chips.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-f]'); if (!a) return;
+      e.preventDefault(); f = a.getAttribute('data-f');
+      $$('a[data-f]', chips).forEach(function (c) { var on = c === a; c.classList.toggle('on', on); if (on) c.setAttribute('aria-current', 'true'); else c.removeAttribute('aria-current'); });
+      try { history.replaceState(null, '', a.getAttribute('href')); } catch (x) {}
+      apply();
+    });
+    if (q) q.addEventListener('input', apply);
+  })();
+
+  /* ---------- Faturalar: editor (live totals, line amounts, known customers) ---------- */
+  $$('form[data-invoice]').forEach(function (f) {
+    var CUST = {};
+    try { CUST = JSON.parse(($('#inv-customers') || {}).textContent || '{}'); } catch (e) {}
+    function fld(k) { return f.querySelector('[name="f[' + k + ']"]'); }
+    function num(el) { if (!el) return 0; var v = parseFloat(String(el.value).replace(/\s+/g, '').replace(',', '.')); return isFinite(v) ? v : 0; }
+    function r2(x) { var s = x < 0 ? -1 : 1; return s * Math.round(parseFloat((Math.abs(x) * 100).toPrecision(15))) / 100; }   // like PHP round(x, 2)
+    function money(v) { v = r2(v); return (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function rate(v) { return String(+(+v).toFixed(2)); }
+    function set(k, v) { $$('[data-inv="' + k + '"]', f).forEach(function (el) { el.textContent = v; }); }
+    function zero(k, on) { var el = $('[data-inv="' + k + '"]', f); if (el && el.parentElement) el.parentElement.classList.toggle('zero', on); }
+    function calc() {
+      var sub = 0;
+      $$('.rep-item', f).forEach(function (it) {
+        var q = $('[name$="[qty]"]', it), p = $('[name$="[price]"]', it); if (!q || !p) return;
+        var a = r2(num(q) * num(p)); sub += a;
+        var head = kid(it, 'rep-head'); if (!head) return;
+        var s = $('.inv-line', head);
+        if (!s) { s = document.createElement('span'); s.className = 'inv-line'; head.insertBefore(s, kid(head, 'rep-tools')); }
+        s.textContent = money(a);
+      });
+      sub = r2(sub);
+      var disc = r2(Math.min(Math.max(0, num(fld('discount'))), Math.max(0, sub)));
+      var taxable = r2(sub - disc), tr = num(fld('tax_rate')), tax = r2(taxable * tr / 100), total = r2(taxable + tax);
+      var paid = r2(Math.max(0, num(fld('paid')))), st = fld('status');
+      if (st && st.value === 'paid') paid = Math.max(paid, total);
+      set('sub', money(sub)); set('disc', '-' + money(disc)); set('tax', money(tax)); set('total', money(total)); set('paid', '-' + money(paid)); set('due', money(total - paid));
+      zero('disc', disc === 0); zero('paid', paid === 0);
+      var tl = $('[data-inv-l="tax"]', f), lab = fld('tax_label');
+      if (tl) tl.textContent = ((lab && lab.value.trim()) || 'Vergi') + ' (' + rate(tr) + '%)';
+    }
+    f.addEventListener('input', calc);
+    f.addEventListener('change', calc);
+    f.addEventListener('click', function (e) { if (e.target.closest('.rep-add, .rep-del, .rep-up, .rep-down')) setTimeout(calc, 0); });
+    calc();
+    // a customer invoiced before: picking the name fills the other details (only empty fields, or ones filled this way)
+    var name = fld('customer.name'), filled = {};
+    if (name) name.addEventListener('input', function () {
+      var c = CUST[name.value.trim()]; if (!c) return;
+      var n = 0;
+      [['company', 'customer.company'], ['address', 'customer.address'], ['email', 'customer.email'], ['phone', 'customer.phone'], ['site', 'site']].forEach(function (p) {
+        var el = fld(p[1]), v = c[p[0]] || ''; if (!el || !v) return;
+        if (el.value.trim() === '' || el.value === filled[p[1]]) { if (el.value !== v) n++; el.value = v; filled[p[1]] = v; }
+      });
+      if (n) toast('Müşteri bilgileri önceki faturadan dolduruldu.');
+    });
+  });
 
   /* ---------- small things ---------- */
   $$('.flash.ok').forEach(function (fl) { setTimeout(function () { fl.style.transition = 'opacity .4s'; fl.style.opacity = '0'; setTimeout(function () { fl.remove(); }, 450); }, 9000); });

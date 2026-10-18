@@ -38,16 +38,34 @@ function render_field(array $fd, array $data, array $parts, array $tpl, array $e
     $cls = 'fld' . ($er !== '' ? ' has-err' : '');
     $max = isset($fd['max']) ? ' maxlength="' . (int)$fd['max'] . '"' : '';
     $seo = isset($fd['seo']) ? ' data-seo="' . $fd['seo'] . '"' : '';
+    // optional input hints: ph = placeholder, list = <datalist> id, ac = autocomplete, im = inputmode (phone keyboards)
+    $more = (isset($fd['ph']) && $t !== 'code' ? ' placeholder="' . e($fd['ph']) . '"' : '') . (isset($fd['list']) ? ' list="' . e($fd['list']) . '"' : '')
+        . (isset($fd['ac']) || isset($fd['list']) ? ' autocomplete="' . e($fd['ac'] ?? 'off') . '"' : '') . (isset($fd['im']) ? ' inputmode="' . e($fd['im']) . '"' : '');
     switch ($t) {
         case 'text':
-            return '<div class="' . $cls . '">' . $lab . '<input type="text" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e(is_scalar($val) ? (string)$val : '') . '"' . $max . $seo . '>' . $help . $er . '</div>';
+            return '<div class="' . $cls . '">' . $lab . '<input type="text" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e(is_scalar($val) ? (string)$val : '') . '"' . $max . $seo . $more . '>' . $help . $er . '</div>';
+        case 'date':
+            $dv = is_string($val) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $val) ? $val : '';
+            return '<div class="' . $cls . ' fdate">' . $lab . '<input type="date" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e($dv) . '"' . (!empty($fd['req']) ? ' required' : '') . '>' . $help . $er . '</div>';
         case 'number':
-            return '<div class="' . $cls . ' fnum">' . $lab . '<input type="text" inputmode="decimal" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e(is_scalar($val) ? (string)$val : '') . '">' . $help . $er . '</div>';
+            return '<div class="' . $cls . ' fnum">' . $lab . '<input type="text" inputmode="decimal" id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" value="' . e(is_scalar($val) ? (string)$val : '') . '"' . (isset($fd['ph']) ? ' placeholder="' . e($fd['ph']) . '"' : '') . '>' . $help . $er . '</div>';
         case 'textarea':
-            return '<div class="' . $cls . '">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" rows="' . (int)($fd['rows'] ?? 3) . '"' . $max . $seo . '>' . e(is_scalar($val) ? (string)$val : '') . '</textarea>' . $help . $er . '</div>';
+            return '<div class="' . $cls . '">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" rows="' . (int)($fd['rows'] ?? 3) . '"' . $max . $seo . $more . '>' . e(is_scalar($val) ? (string)$val : '') . '</textarea>' . $help . $er . '</div>';
         case 'code':
             return '<div class="' . $cls . ' fcode">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" data-code="' . e($fd['lang'] ?? 'html') . '" rows="' . (int)($fd['rows'] ?? 10) . '" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"'
                 . (isset($fd['ph']) ? ' placeholder="' . e($fd['ph']) . '"' : '') . '>' . e(is_scalar($val) ? (string)$val : '') . '</textarea>' . $help . $er . '</div>';
+        case 'themecode':
+            $orig = theme_original((string)$fd['src']);
+            $edited = is_scalar($val) && trim((string)$val) !== '';
+            $cur = $edited ? (string)$val : $orig;
+            $base = (string)path_get($data, $k . '_base', '');
+            $state = $edited ? ic('alert') . '<span data-tc-msg>Düzenlenmiş kopya kullanılıyor.</span>' : ic('check') . '<span data-tc-msg>Sitenin orijinal kodu kullanılıyor.</span>';
+            return '<div class="' . $cls . ' fcode ftheme">' . $lab
+                . '<div class="tc-state ' . ($edited ? 'ed' : 'orig') . '">' . $state . '<span class="dim">' . (substr_count($cur, "\n") + 1) . ' satır · ' . kb(strlen($cur)) . '</span>'
+                . '<button type="button" class="link" data-code-reset>Orijinal koda dön</button></div>'
+                . ($edited && $base !== '' && $base !== sha1($orig) ? '<div class="flash warn small">' . ic('alert') . '<div>Sitenin orijinal kodu, siz bu kopyayı düzenledikten sonra güncellendi (yeni sürüm). Güncel orijinali kullanmak için "Orijinal koda dön"e basıp kendi değişikliğinizi yeniden yapın.</div></div>' : '')
+                . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" data-code="' . e($fd['lang'] ?? 'css') . '" rows="' . (int)($fd['rows'] ?? 22) . '" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off">' . e($cur) . '</textarea>'
+                . '<template class="code-orig">' . e($orig) . '</template>' . $help . $er . '</div>';
         case 'lines':
             $txt = is_array($val) ? implode("\n", array_map('strval', $val)) : (string)$val;
             return '<div class="' . $cls . '">' . $lab . '<textarea id="' . $id . '" name="' . e($name) . '" data-n="' . e($dn) . '" rows="' . (int)($fd['rows'] ?? 4) . '">' . e($txt) . '</textarea>' . $help . $er . '</div>';
@@ -139,7 +157,7 @@ function render_repeater(array $fd, array $items, array $np, array $nt, array $e
     return $o . '<button type="button" class="btn sm rep-add">+ ' . e($fd['add'] ?? 'Ekle') . '</button></div>';
 }
 function rep_item(array $fd, array $item, array $np, array $nt, array $errors, string $ep, bool $isNew): string {
-    $hasErr = false;
+    $hasErr = !empty($fd['open']);                       // 'open': items start unfolded (short items such as invoice lines)
     foreach ($errors as $p => $_) if ($ep !== '' && str_starts_with($p, $ep . '.')) { $hasErr = true; break; }
     return '<div class="rep-item' . ($isNew ? ' is-new' : '') . ($hasErr ? ' open' : '') . '" data-tk="' . e((string)($fd['title'] ?? '')) . '"><div class="rep-head"><button type="button" class="rep-tog" aria-expanded="' . ($hasErr || $isNew ? 'true' : 'false') . '"><span class="rep-t">' . e(rep_title($fd, $item)) . '</span></button>'
         . '<span class="rep-tools"><button type="button" class="ib rep-up" title="Yukarı">↑</button><button type="button" class="ib rep-down" title="Aşağı">↓</button><button type="button" class="ib rep-del" title="Sil">✕</button></span></div>'
@@ -219,10 +237,25 @@ function parse_fields(array $fields, array $post, array $data, array &$errors, s
             case 'textarea':
                 if (!$has) break;
                 path_set($data, $k, validate_value($fd, clean_text($raw), $p, $errors)); break;
+            case 'date':
+                if (!$has) break;
+                $v = trim((string)$raw);
+                if ($v === '') { if (!empty($fd['req'])) $errors[$p] = 'Bir tarih seçin.'; path_set($data, $k, ''); break; }
+                if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $v, $m) || !checkdate((int)$m[2], (int)$m[3], (int)$m[1])) { $errors[$p] = 'Geçerli bir tarih seçin (YYYY-AA-GG).'; break; }
+                path_set($data, $k, $v); break;
             case 'code':
                 if (!$has) break;
                 $code = parse_code($fd, (string)$raw, $p, $errors);
                 if ($code !== null) path_set($data, $k, $code);
+                break;
+            case 'themecode':
+                if (!$has) break;
+                $code = parse_code(['lang' => ($fd['lang'] ?? 'css') === 'css' ? 'css' : 'html'], (string)$raw, $p, $errors);
+                if ($code === null) break;
+                $orig = theme_original((string)$fd['src']);
+                if ($code === trim(str_replace(["\r\n", "\r"], "\n", $orig)) || $code === '') { path_set($data, $k, ''); path_set($data, $k . '_base', ''); break; }   // unchanged: keep following the code updates
+                if (($fd['lang'] ?? '') === 'html' && !preg_match('#^(\s*<script\b[^>]*>.*?</script>)+\s*$#is', $code)) { $errors[$p] = 'JavaScript kodu <script> … </script> blokları içinde kalmalı.'; break; }
+                path_set($data, $k, $code); path_set($data, $k . '_base', sha1($orig));
                 break;
             case 'lines':
                 if (!$has) break;
@@ -319,6 +352,12 @@ function parse_code(array $fd, string $v, string $p, array &$errors): ?string {
     if ($lang === 'js' && preg_match('#<script\b#i', $v)) $errors[$p] = 'Bu alana sadece JavaScript yazın. <script> etiketli hazır kodları (Meta Pixel, Tag Manager vb.) aşağıdaki HTML alanlarına yapıştırın.';
     if (mb_strlen($v) > 200000) $errors[$p] = 'Kod çok uzun (en fazla 200.000 karakter).';
     return $v;
+}
+/** The site's own code as shipped (theme files): CSS without its <style> wrapper, the scripts as they are. */
+function theme_original(string $src): string {
+    $s = trim(str_replace(["\r\n", "\r"], "\n", theme($src)));
+    if ($src === 'style.html' && preg_match('#^<style\b[^>]*>(.*)</style>$#s', $s, $m)) $s = trim($m[1]);
+    return $s;
 }
 function rep_defaults(array $fd): array { return is_array($fd['new'] ?? null) ? $fd['new'] : []; }
 /** Branding hidden inputs (logo uploads) are plain top-level paths. */

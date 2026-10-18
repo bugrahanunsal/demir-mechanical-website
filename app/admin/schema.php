@@ -315,8 +315,22 @@ function schema_sections(): array {
         F('pages.notfound.seo_title', 'text', 'Tarayıcı başlığı'), F('pages.notfound.seo_description', 'textarea', 'Açıklama', ['rows' => 2]),
     ]],
     /* ------------------------------------------------------------------ */
+    'invoicing' => ['title' => 'Fatura Ayarları', 'icon' => 'sliders', 'private' => true, 'back' => ['invoices', '← Faturalar'], 'saved' => ' <a href="index.php?p=invoices">Faturalara dön</a>', 'intro' => 'Yeni faturalarda kullanılan bilgiler. Firma adı, adres, telefon ve logo Firma Bilgileri ile Logo & Görseller\'den gelir. Buradaki değişiklikler sadece yeni faturalara uygulanır (vergi, not ve ödeme yazısı); daha önce kesilen faturalar aynı kalır.', 'fields' => [
+        HD('Vergi (HST)'),
+        F('invoice.tax_number', 'text', 'HST / GST numarası', ['max' => 40, 'ph' => '123456789 RT0001', 'h' => 'CRA\'nın verdiği Business Number + RT0001. HST\'ye kayıtlıysanız faturada bulunması gerekir; firma bilgilerinin altında görünür.']),
+        F('invoice.tax_label', 'text', 'Vergi adı', ['req' => true, 'max' => 20, 'h' => 'Ontario için HST.']),
+        F('invoice.tax_rate', 'number', 'Vergi oranı (%)', ['min' => 0, 'max' => 100, 'h' => 'Ontario HST %13. Her faturada ayrıca değiştirilebilir.']),
+        HD('Numara ve ödeme süresi'),
+        F('invoice.prefix', 'text', 'Fatura numarası ön eki', ['max' => 12, 'h' => 'Örnek: DM- yazarsanız numaralar DM-1001, DM-1002… olur. Boş bırakılabilir.']),
+        F('invoice.start', 'number', 'İlk fatura numarası', ['int' => true, 'min' => 1, 'max' => 99999999, 'h' => 'Numaralar buradan veya son faturanın bir fazlasından (hangisi büyükse) devam eder.']),
+        F('invoice.due_days', 'number', 'Ödeme süresi (gün)', ['int' => true, 'min' => 0, 'max' => 365, 'h' => 'Son ödeme tarihi = fatura tarihi + bu kadar gün. 0 yazarsanız faturada "On receipt" (teslimde ödenir) yazar.']),
+        HD('Faturanın alt kısmı (İngilizce)'),
+        F('invoice.payment', 'textarea', 'Ödeme bilgileri', ['rows' => 3, 'max' => 1000, 'h' => '{email} = firma e-postası, {legal_name} = firma adı, {phone} = telefon.']),
+        F('invoice.notes', 'textarea', 'Not', ['rows' => 2, 'max' => 1000]),
+    ]],
+    /* ------------------------------------------------------------------ */
     'custom' => ['title' => 'Özel Kod (CSS / JS)', 'icon' => 'code', 'intro' => 'Geliştiriciler için: sitenin bütün sayfalarına kendi CSS, JavaScript veya hazır HTML kodunuzu ekleyin (tasarım ince ayarları, Meta Pixel, Google Tag Manager, canlı destek vb.). Kaydetmeden önce Önizle ile kontrol edin. Bir şey bozulursa "Özel kodları uygula" işaretini kaldırıp kaydedin ya da Yedekler\'den önceki hale dönün.', 'fields' => [
-        F('custom.enabled', 'check', 'Özel kodları uygula', ['h' => 'İşareti kaldırırsanız kodlar silinmez, sadece siteden kalkar. Sorun ararken işe yarar.']),
+        F('custom.enabled', 'check', 'Özel kodları uygula', ['h' => 'İşareti kaldırırsanız kodlar silinmez, sadece siteden kalkar (aşağıdaki "Sitenin kendi kodu"nda yaptığınız değişiklikler dahil; site orijinal koduyla çalışır). Sorun ararken işe yarar.']),
         HD('CSS', 'Sitenin kendi stillerinden sonra yüklenir, yani onları ezer. Tek bir sayfa için: body[data-page="drain-cleaning"] h1 { … }. Bir türdeki bütün sayfalar için: body[data-type="service"] … — türler: home, services, service, areas, city, projects, project, about, contact, faq, 404.'),
         F('custom.css', 'code', 'Özel CSS', ['lang' => 'css', 'rows' => 14, 'ph' => "/* Örnek: ana sayfa başlığını büyüt */\nbody[data-page=\"index\"] .hero h1 { font-size: 3.4rem; }"]),
         HD('JavaScript', 'Her sayfanın en sonunda, sitenin kendi kodundan sonra çalışır. Buraya <script> etiketi yazmayın; etiketli hazır kodlar aşağıdaki HTML alanlarına gider.'),
@@ -325,6 +339,9 @@ function schema_sections(): array {
         F('custom.head', 'code', '<head> içine', ['lang' => 'html', 'rows' => 8, 'h' => 'Doğrulama etiketleri ve takip kodları (ör. Google Tag Manager\'ın ilk kodu, Meta Pixel).']),
         F('custom.body_start', 'code', '<body> açılışından hemen sonra', ['lang' => 'html', 'rows' => 5, 'h' => 'Ör. Google Tag Manager\'ın <noscript> kodu.']),
         F('custom.body_end', 'code', '</body> kapanmadan hemen önce', ['lang' => 'html', 'rows' => 8, 'h' => 'Canlı destek / sohbet kutuları ve diğer ek scriptler.']),
+        HD('Sitenin kendi kodu (gelişmiş)', 'Sitenin bütün tasarımı (CSS) ve davranışı (JavaScript) burada. Değiştirmek istediğiniz yeri Ctrl+F ile bulup düzenleyin, kaydetmeden önce Önizle ile kontrol edin. Bir şey bozulursa "Orijinal koda dön" ile ilk haline dönersiniz. Küçük eklemeler için yukarıdaki Özel CSS daha güvenlidir: orada yazılan, buradakini ezer. Not: Bu kodu değiştirdiğiniz sürece ileride gelen tasarım güncellemeleri bu kodun yerine geçmez; güncel orijinale dönmek için "Orijinal koda dön"e basın.'),
+        F('custom.theme_css', 'themecode', 'Sitenin CSS kodu (tasarım)', ['lang' => 'css', 'src' => 'style.html', 'rows' => 24]),
+        F('custom.theme_js', 'themecode', 'Sitenin JavaScript kodu (menü, formlar, fotoğraf görüntüleyici)', ['lang' => 'html', 'src' => 'script.html', 'rows' => 18, 'h' => '<script> … </script> blokları içinde kalmalı. __GA4__ yer tutucusunu silmeyin (Google Analytics kimliği oraya yazılır).']),
     ]],
     ];
 }

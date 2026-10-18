@@ -19,12 +19,12 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
 | `app/pages.php`, `app/lib.php` | Page renderer: builds every page from the content (pure functions, no I/O except reading images) | yes | denied to the web |
 | `app/theme/` | CSS (`style.html`), page script (`script.html`), icons, decorative SVG, fixed snippets | yes | denied |
 | `app/content.default.json` | Default content = the site as launched. New fields added here reach existing sites automatically (deep merge) | yes | denied |
-| `app/admin/` | Admin panel code: `core` (auth, CSRF, rate limit), `store` (save/publish/backups), `images` (uploads), `schema` (what is editable), `forms` (form engine), `views`, `actions`, `seo` (SEO panel), `boot` | yes | denied |
+| `app/admin/` | Admin panel code: `core` (auth, CSRF, rate limit), `store` (save/publish/backups), `images` (uploads), `schema` (what is editable), `forms` (form engine), `views`, `actions`, `seo` (SEO panel), `media` (Galeri), `invoices` (Faturalar), `pdf` (PDF writer), `boot` | yes | denied |
 | `admin/` | Panel entry point `index.php`, rebuild hook `hook.php`, `assets/admin.css`, `assets/admin.js` | yes | public (login required) |
 | `assets/` | Logos, icons, photos, cursor. `assets/uploads/` = photos uploaded in the panel | yes (uploads: no) | public |
 | `send.php`, `lib/phpmailer/` | Contact/quote form mailer (Hostinger SMTP via PHPMailer, `mail()` fallback) | yes | public / denied |
 | `form-config.php` | **Secret**: mailbox password for the form mailer. Copy from `form-config.sample.php` | **never** | denied |
-| `data/` | **Server only**: `content.json`, `admin-auth.php` (password hash), `backups/`, `published.json`, `ratelimit/` | **never** | denied |
+| `data/` | **Server only**: `content.json`, `invoices.json` (invoices, customer data), `admin-auth.php` (password hash), `backups/`, `published.json`, `ratelimit/` | **never** | denied |
 | `*.html`, `sitemap.xml`, `robots.txt` | Generated pages | no (generated) | public |
 | `_dev/` | Local build, test server router, tests | yes | denied |
 
@@ -53,6 +53,23 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
   duplicates, H1, word count, alt texts, file names, sharing image). It updates while typing (`a=seo_check`, nothing saved).
   Code: `app/admin/seo.php`; per-page settings `seo_title`, `seo_description`, `seo_keyphrase`, `og_image` ('' = automatic,
   'none' = no image) live at `pages.<page>` or on the service / area / project item (`page_base()` in `app/pages.php`).
+* **Galeri:** every image of the site in one grid, wherever it was uploaded (services, areas, projects, home page, founder,
+  logos, sharing images, the site's own `assets/photos`, unused uploads), with file name and alternative text on each card;
+  search and filters (photos / sharing images / logos / missing alt / unused). A click opens a window (deep link
+  `?p=media&open=<file>`, previous/next) with the large photo, size, every place that uses it (links to the editor and the page),
+  and the editable **alt text** (written to every use; empty refused unless all uses are project gallery photos, which fall back to
+  the project title) and **file name** (same rename as the SEO panel). Nothing is stored for the gallery itself: it is read from
+  the content and the photo folders (`app/admin/media.php`).
+* **Faturalar (İşletme):** invoices for the business's customers, as PDF. Stored in `data/invoices.json` (mode 0600, never in
+  git or the content; a copy goes to `data/backups/invoices-*.json` before every change, the full zip backup includes it).
+  List with unpaid / this month / paid this year, search and filters (Ödenmemiş, Gecikmiş = past the due date, Ödendi, Taslak,
+  İptal). Editor (form engine, `invoice_fields()`): number (prefix + running number, unique), status, dates, customer (names
+  from earlier invoices fill the other details), service address, lines (description / qty / rate), tax (HST 13 %), discount
+  before tax, deposit, notes, payment details; live totals in the page (admin.js rounds like PHP `round()`), "PDF önizle"
+  (POST, nothing saved), copy, delete. The PDF is English, Letter size, written by `DmPdf` (`app/admin/pdf.php`: Helvetica,
+  WinAnsi, the header logo as JPEG, pages with "Page x of y", PAID / VOID stamp). Settings at `content.invoice`
+  (Fatura Ayarları: HST number, prefix, first number, tax, due days, payment text with `{email}` `{legal_name}` `{phone}`, note);
+  the section is `private` (no site preview; saving still goes through `content_save`, pages are unchanged).
 * **Yedekler:** automatic backup before every save (last 60), one-click restore, download `content.json`, download a **full zip**
   of the site (pages + panel + photos + content, without passwords), import a `content.json`, delete uploads no backup uses.
 * **Önizle:** every editor can preview the page with unsaved changes in a new tab (nothing is written).
@@ -62,6 +79,11 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
   projects, project, about, contact, faq, 404) so CSS can target one page or one kind of page. The panel sends code fields
   base64-encoded (`b64:` prefix) so hosting firewalls that block posts containing `<script>` don't interfere. HTML snippets are
   left out of the Claude preview build.
+  **Sitenin kendi kodu:** the site's own CSS (`app/theme/style.html` without its `<style>` wrapper) and JavaScript
+  (`script.html`, must stay `<script>` blocks) are shown in two code fields (`themecode` type). Saving an unchanged copy stores
+  nothing (`custom.theme_css` / `theme_js` stay ''), so code updates keep arriving. An edited copy replaces the shipped file in
+  `css()` / `scripts()` while custom code is switched on; `theme_*_base` keeps the sha1 of the original it was edited from, and the
+  panel warns when a newer original has shipped since. "Orijinal koda dön" puts the original back.
 * Photo uploads: phone photos are resized in the browser (≤2400 px) and on the server (WebP, 1600 px + 700 px `-sm` copy for
   phones), turned upright from EXIF, named from the alt text / title, unique names (images are cached for 6 months).
 
@@ -81,13 +103,16 @@ Owner    ──►  /admin/  ──►  data/content.json  ──►  app/pages.
 * First-run setup must prove ownership: the mailbox password already in `form-config.php`, or — if that is empty —
   a one-time code written to `data/setup-code.txt` (readable only through the hosting file manager).
 * CSRF token on every POST + `Origin` check; login and setup rate-limited per IP (8 failures / 15 min).
-* Strict CSP on panel pages (`script-src 'self'`, no inline script), `X-Frame-Options: DENY`, `noindex`.
+* Strict CSP on panel pages (`script-src 'self'`, no inline script), `X-Frame-Options: DENY`, `noindex`. Only file responses
+  drop them (`header_remove`): downloads drop the CSP, invoice PDFs also `X-Frame-Options` so the browser's PDF viewer can show
+  them. Both still need the login.
 * Uploads are re-encoded by GD (no original bytes are kept), stored under generated names.
 * Forgot the password? Delete `data/admin-auth.php` in the file manager and open `/admin/` again.
 
 ## Local development
 
-Requirements: PHP ≥ 8.1 with GD (WebP), EXIF, Zip; for tests Python 3 + Playwright (Chromium) + Pillow.
+Requirements: PHP ≥ 8.1 with GD (WebP), EXIF, Zip, mbstring; for tests Python 3 + Playwright (Chromium) + Pillow, and `qpdf` +
+`poppler-utils` (pdftotext, pdftoppm) for the invoice PDF checks.
 
 ```bash
 # build the pages from the default content into a folder

@@ -1644,6 +1644,20 @@
   "js": "",
   "head": "",
   "body_start": "",
-  "body_end": ""
+  "body_end": "",
+  "theme_css": "",
+  "theme_css_base": "",
+  "theme_js": "",
+  "theme_js_base": ""
+ },
+ "invoice": {
+  "prefix": "DM-",
+  "start": 1001,
+  "tax_label": "HST",
+  "tax_rate": 13,
+  "tax_number": "",
+  "due_days": 14,
+  "payment": "Interac e-Transfer: {email}\nCheque payable to: {legal_name}\nPlease include the invoice number with your payment.",
+  "notes": "Thank you for your business!"
  }
 }

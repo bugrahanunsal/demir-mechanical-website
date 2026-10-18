@@ -123,6 +123,7 @@ function act_save_sec(): never {
     $S = schema_sections()[$key];
     if ($errors) out($S['title'], 'sec&s=' . $key, view_section($key, $new, $errors), true, 422);
     $rep = content_save($new, $S['title'] . ' kaydedildi');
+    if (!empty($S['private'])) redirect(['p' => 'sec', 's' => $key], '<b>' . e($S['title']) . ' kaydedildi.</b>' . ($S['saved'] ?? ''));   // panel-only settings: nothing changes on the site
     redirect(['p' => 'sec', 's' => $key], save_msg($rep));
 }
 
@@ -354,7 +355,8 @@ function full_backup_zip(): string {
         $z->addFile($f->getPathname(), $rel);
     }
     $z->addFromString('YEDEK-BILGI.txt', "Demir Mechanical web sitesi tam yedeği — " . date('Y-m-d H:i') . "\n\n"
-        . "İçerik: data/content.json (tüm yazılar ve ayarlar), assets/ (fotoğraflar ve logolar), sitenin sayfaları, admin paneli ve kodu.\n"
+        . "İçerik: data/content.json (tüm yazılar ve ayarlar), data/invoices.json (faturalar), assets/ (fotoğraflar ve logolar), sitenin sayfaları, admin paneli ve kodu.\n"
+        . "Faturalarda müşterilerin kişisel bilgileri vardır: bu yedeği güvenli bir yerde saklayın, herkese açık bir yere yüklemeyin.\n"
         . "Şifreler bu yedekte yoktur: form-config.php (e-posta şifresi) ve data/admin-auth.php (panel şifresi).\n"
         . "Başka bir sunucuya taşımak için: dosyaları public_html klasörüne çıkarın, form-config.sample.php'yi form-config.php olarak kopyalayıp e-posta şifresini yazın,\n"
         . "sonra /admin/ adresini açıp paneli yeniden kurun.\n");

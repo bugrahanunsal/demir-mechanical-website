@@ -27,10 +27,13 @@ Panel adresi: **https://demirmechanical.com/admin/**
 | Müşteri yorumları | İçerik → Yorumlar |
 | Sık sorulan sorular | İçerik → Sık Sorulan Sorular |
 | Her sayfanın yazıları ve fotoğrafları | Sayfalar → … |
+| Sitedeki bütün fotoğrafları bir arada görmek, dosya adı ve alt metnini değiştirmek | İçerik → Galeri → fotoğrafa tıklayın |
+| **Müşteriye fatura** hazırlamak, PDF indirmek, ödenenleri takip etmek | İşletme → Faturalar → Yeni fatura |
+| HST numarası, fatura numarası ön eki, ödeme süresi ve ödeme bilgileri | İşletme → Fatura Ayarları |
 | Google başlıkları, açıklamalar, anahtar kelimeler, paylaşım görselleri, fotoğraf adları ve alt metinleri (Google önizlemesi, öneriler, SEO kontrolü) | Araçlar → SEO Paneli → Düzenle |
 | Bir değişikliği geri almak, yedek indirmek | Araçlar → Yedekler |
 | Şifre değiştirme | Araçlar → Hesap & Güvenlik |
-| Geliştirici için özel CSS / JavaScript / takip kodları | Araçlar → Özel Kod |
+| Geliştirici için özel CSS / JavaScript / takip kodları, sitenin kendi CSS ve JavaScript kodunu düzenleme | Araçlar → Özel Kod |
 
 - **Kaydet ve yayınla** düğmesi değişikliği hemen siteye koyar (önbellek temizlemeye gerek yok).
 - **Önizle** düğmesi kaydetmeden önce sayfanın nasıl görüneceğini yeni sekmede gösterir.
@@ -44,6 +47,18 @@ Panel adresi: **https://demirmechanical.com/admin/**
 4. **Kaydet ve yayınla**. Proje sayfası, Projeler sayfası, ana sayfadaki "Recent Projects" bölümü ve menüdeki "Projects" kendiliğinden çıkar.
    Taslak olarak tutmak için "Sitede yayında" işaretini kaldırın.
 
+### Fatura kesmek
+1. İlk seferde **İşletme → Fatura Ayarları**'ndan HST numaranızı (ör. 123456789 RT0001) yazıp kaydedin.
+2. **İşletme → Faturalar → Yeni fatura**. Numara ve tarih kendiliğinden gelir.
+3. Müşterinin adını, adresini, e-postasını yazın. Daha önce fatura kestiğiniz bir müşteriyi listeden seçerseniz bilgileri kendiliğinden dolar.
+4. Yapılan işleri ve malzemeleri **İngilizce** yazın: açıklama, adet/saat, birim fiyat (vergisiz). Toplam ve HST (%13) yazarken hesaplanır.
+5. Kapora aldıysanız "Alınan ödeme" alanına yazın; faturada kalan tutar çıkar. **PDF önizle** ile kontrol edip **Kaydet**'e basın.
+6. **PDF indir** ile dosyayı alıp müşteriye e-posta veya WhatsApp ile gönderin. Ödeme gelince durumu **Ödendi** yapıp kaydedin
+   (PDF'te PAID damgası çıkar). Son ödeme tarihi geçen faturalar listede ve panel ana sayfasında **Gecikmiş** olarak görünür.
+- Faturalar sadece sunucuda, korumalı `data/invoices.json` dosyasında durur; sitede ve GitHub'da görünmez. Her değişiklikten
+  önce bir kopyası `data/backups` klasörüne alınır. Tam yedek (.zip) faturaları da içerir: o dosyayı güvenli yerde saklayın.
+- Gönderilmiş bir faturayı silmek yerine durumunu **İptal** yapın (faturada VOID yazar, numara sırası bozulmaz).
+
 ### Google Analytics bağlamak
 analytics.google.com → Yönetici → Veri akışları → web akışı → **Ölçüm Kimliği** (G-XXXXXXXXXX). Bu kimliği
 Site Ayarları → WhatsApp & Bağlantılar → "Google Analytics 4 ölçüm kimliği" alanına yapıştırıp kaydedin.
@@ -55,5 +70,6 @@ Dosya Yöneticisi → `public_html/data/admin-auth.php` dosyasını silin → /a
 
 ## 4. Siteyi bir geliştiriciye devretmek
 - **Kod:** GitHub deposu `bugrahanunsal/demir-mechanical-website` (geliştiriciyi depoya ekleyin veya depoyu devredin).
-- **İçerik ve fotoğraflar:** Panel → Yedekler → **Tam yedek (.zip)**. Bu dosya sitenin o anki eksiksiz kopyasıdır (şifreler hariç).
+- **İçerik ve fotoğraflar:** Panel → Yedekler → **Tam yedek (.zip)**. Bu dosya sitenin o anki eksiksiz kopyasıdır (şifreler hariç;
+  faturalar ve müşteri bilgileri dahil, bu yüzden güvenli bir yoldan iletin).
 - **Erişimler:** Hostinger hesabı, alan adı, info@ e-posta hesabı ve panel şifresi (bunları güvenli bir yoldan iletin, GitHub'a yazmayın).
